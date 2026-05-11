@@ -1,0 +1,29 @@
+/*
+ * main.css
+ *
+ * Single stylesheet for the entire project.
+ * Sections:
+ *   1. CSS custom properties (design tokens)
+ *   2. Reset / base styles
+ *   3. Layout — #app-header, #dashboard grid
+ *   4. Components — .check-card, .score-summary, buttons
+ *   5. @media print — hides form/buttons, expands cards for PDF save
+ *
+ * ALL colors, spacing, radius, and font values must be defined as
+ * custom properties in section 1 and referenced everywhere else.
+ *
+ * Tokens to define:
+ *   --color-bg            page background
+ *   --color-surface       card background
+ *   --color-border        subtle borders
+ *   --color-pass          green — #check-card pass status
+ *   --color-warn          amber — #check-card warn status
+ *   --color-fail          red   — #check-card fail status
+ *   --color-text-primary  main body text
+ *   --color-text-secondary  muted / secondary text
+ *   --space-xs / sm / md / lg / xl  spacing scale
+ *   --radius-sm / md      border-radius scale
+ *   --font-sans           system UI font stack
+ *   --font-mono           monospace stack (findings list)
+ *   --shadow-card         box-shadow for .check-card
+ */
