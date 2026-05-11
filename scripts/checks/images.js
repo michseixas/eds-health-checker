@@ -1,40 +1,213 @@
 /**
  * checks/images.js
  *
- * Audits image URL routing on the target EDS page.
+ * Audits image URL routing and markup quality on the target EDS page.
  *
- * EDS image conventions:
- *   - Images should be served through EDS's media pipeline:
- *       ./media/<filename>  or  media_<hash>.<ext>  (relative/absolute on same origin)
- *   - External image URLs (e.g. https://cdn.example.com/image.png) are a red flag —
- *     they bypass EDS optimisation, auto-WebP conversion, and width/format negotiation
- *   - <picture> + <source> with width descriptors is the expected EDS pattern
+ * EDS image pipeline conventions:
+ *   - Images authored in Google Docs / SharePoint are processed by EDS and served
+ *     from the same origin with filenames matching: media_<hash>.<ext>
+ *   - EDS auto-generates <picture> + <source> elements with WebP variants and
+ *     width descriptors for responsive delivery.
+ *   - External image URLs bypass EDS optimisation (no WebP, no resizing, no CDN caching).
  *
- * Approach:
- *   - Fetch and parse the page HTML with DOMParser
- *   - querySelectorAll('img, source') to collect all image URLs (src, srcset)
- *   - Classify each URL:
- *       - same-origin media_ path → OK
- *       - data: URI → warn (may indicate inline images)
- *       - external origin → fail finding
- *   - Also check that <img> elements use width + height attributes (CLS prevention)
- *
- * Status:
- *   - All images routed through EDS media pipeline → pass
- *   - Some data URIs or missing dimensions → warn
- *   - Any external image URLs detected → fail
+ * Findings are capped per category to keep the report actionable.
  */
+
+/** Matches EDS media pipeline filenames: media_<hex-hash>.<ext> */
+const MEDIA_PIPELINE_RE = /\/media_[a-f0-9]/i;
+
+/** Max findings reported per category before summarising the remainder */
+const MAX_PER_CATEGORY = 5;
 
 /**
  * @param {string} url
  * @returns {Promise<{id: string, label: string, status: 'pass'|'warn'|'fail', findings: string[]}>}
  */
 export async function run(url) {
-  // TODO: implement image routing check
-  return {
-    id: 'images',
-    label: 'Image Routing',
-    status: 'pass',
-    findings: [],
-  };
+  let doc;
+  try {
+    doc = await fetchAndParse(url);
+  } catch (err) {
+    return result('fail', [`Could not fetch page HTML: ${err.message}`]);
+  }
+
+  const pageOrigin = new URL(url).origin;
+  const findings = [];
+  let hasExternal = false;
+
+  const imgs = [...doc.querySelectorAll('img')];
+  const sources = [...doc.querySelectorAll('source')];
+
+  // --- Classify every <img src> ---
+  const external = [];
+  const nonPipeline = [];
+  const dataUris = [];
+  const missingDimensions = [];
+  const unwrapped = [];
+
+  for (const img of imgs) {
+    const src = img.getAttribute('src') ?? '';
+    if (!src || src.startsWith('#')) continue;
+
+    const kind = classifyUrl(src, pageOrigin, url);
+
+    if (kind === 'external') {
+      external.push(src);
+    } else if (kind === 'data') {
+      dataUris.push(src);
+    } else if (kind === 'non-pipeline') {
+      nonPipeline.push(src);
+    }
+
+    if (!img.hasAttribute('width') || !img.hasAttribute('height')) {
+      missingDimensions.push(src);
+    }
+
+    if (img.closest('picture') === null) {
+      unwrapped.push(src);
+    }
+  }
+
+  // --- Classify every <source srcset> ---
+  const externalInSrcset = [];
+  for (const source of sources) {
+    const srcset = source.getAttribute('srcset') ?? '';
+    for (const u of parseSrcset(srcset)) {
+      if (classifyUrl(u, pageOrigin, url) === 'external') {
+        externalInSrcset.push(u);
+      }
+    }
+  }
+
+  // --- Build findings ---
+
+  if (external.length > 0) {
+    hasExternal = true;
+    addCapped(
+      findings,
+      external,
+      (src) => `External <img>: "${truncate(src)}" — bypasses EDS WebP conversion and CDN caching.`,
+      'external <img> URLs',
+    );
+  }
+
+  if (externalInSrcset.length > 0) {
+    hasExternal = true;
+    addCapped(
+      findings,
+      externalInSrcset,
+      (src) => `External <source srcset>: "${truncate(src)}" — bypasses EDS media pipeline.`,
+      'external srcset URLs',
+    );
+  }
+
+  if (nonPipeline.length > 0) {
+    addCapped(
+      findings,
+      nonPipeline,
+      (src) => `Same-origin image not through EDS pipeline: "${truncate(src)}" — missing auto-WebP and responsive resizing.`,
+      'non-pipeline same-origin images',
+    );
+  }
+
+  if (dataUris.length > 0) {
+    findings.push(
+      `${dataUris.length} data: URI image(s) found — inline images bloat HTML and bypass the media pipeline.`,
+    );
+  }
+
+  if (missingDimensions.length > 0) {
+    addCapped(
+      findings,
+      missingDimensions,
+      (src) => `<img> missing width/height attributes (CLS risk): "${truncate(src)}".`,
+      'images missing dimensions',
+    );
+  }
+
+  if (unwrapped.length > 0) {
+    addCapped(
+      findings,
+      unwrapped,
+      (src) => `<img> not inside <picture> (no WebP/responsive source variants): "${truncate(src)}".`,
+      'unwrapped images',
+    );
+  }
+
+  if (imgs.length === 0 && sources.length === 0) {
+    return result('pass', []);
+  }
+
+  const status = hasExternal ? 'fail' : findings.length > 0 ? 'warn' : 'pass';
+  return result(status, findings);
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+async function fetchAndParse(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  const html = await res.text();
+  return new DOMParser().parseFromString(html, 'text/html');
+}
+
+function result(status, findings) {
+  return { id: 'images', label: 'Image Routing', status, findings };
+}
+
+/**
+ * Classify an image URL relative to the page.
+ * @returns {'pipeline'|'non-pipeline'|'external'|'data'}
+ */
+function classifyUrl(src, pageOrigin, pageUrl) {
+  if (src.startsWith('data:')) return 'data';
+
+  let resolved;
+  try {
+    resolved = new URL(src, pageUrl);
+  } catch {
+    // Unparseable — treat as non-pipeline
+    return 'non-pipeline';
+  }
+
+  if (resolved.origin !== pageOrigin) return 'external';
+  return MEDIA_PIPELINE_RE.test(resolved.pathname) ? 'pipeline' : 'non-pipeline';
+}
+
+/**
+ * Parse a srcset attribute value into an array of URLs.
+ * Handles both width descriptors (750w) and density descriptors (2x).
+ * @param {string} srcset
+ * @returns {string[]}
+ */
+function parseSrcset(srcset) {
+  if (!srcset.trim()) return [];
+  return srcset
+    .split(',')
+    .map((part) => part.trim().split(/\s+/)[0])
+    .filter(Boolean);
+}
+
+/**
+ * Add up to MAX_PER_CATEGORY individual findings, then a summary line for the rest.
+ * @param {string[]} findings  target array to push into
+ * @param {string[]} items     source list of URLs/values
+ * @param {(item: string) => string} format  finding message formatter
+ * @param {string} categoryLabel  used in the overflow summary line
+ */
+function addCapped(findings, items, format, categoryLabel) {
+  const shown = items.slice(0, MAX_PER_CATEGORY);
+  const rest = items.length - shown.length;
+  for (const item of shown) findings.push(format(item));
+  if (rest > 0) findings.push(`…and ${rest} more ${categoryLabel}.`);
+}
+
+/**
+ * Shorten long URLs for display while keeping them identifiable.
+ * @param {string} src
+ */
+function truncate(src, max = 80) {
+  return src.length <= max ? src : `${src.slice(0, max)}…`;
 }
