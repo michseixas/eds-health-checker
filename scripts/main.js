@@ -1,14 +1,8 @@
 /**
  * main.js
  *
- * Application entry point and check orchestrator.
- *
- * Responsibilities:
- *   1. Listen for URL form submission in #app-header
- *   2. Validate and normalise the input URL
- *   3. Call renderLoading() to show progress state
- *   4. Run all four checks in parallel via Promise.allSettled()
- *   5. Pass the collected CheckResult array to render() in report/dashboard.js
+ * Wires up the URL form, runs all four checks in parallel, and hands
+ * the collected results to the dashboard renderer.
  *
  * @typedef {{ id: string, label: string, status: 'pass'|'warn'|'fail', findings: string[] }} CheckResult
  */
@@ -18,3 +12,53 @@ import { run as runMetadata } from './checks/metadata.js';
 import { run as runBlocks } from './checks/blocks.js';
 import { run as runImages } from './checks/images.js';
 import { render, renderLoading, renderError } from './report/dashboard.js';
+
+const CHECKS = [
+  { id: 'performance', label: 'Performance',        run: runPerformance },
+  { id: 'metadata',    label: 'Metadata',            run: runMetadata    },
+  { id: 'blocks',      label: 'Block Structure',     run: runBlocks      },
+  { id: 'images',      label: 'Image Routing',       run: runImages      },
+];
+
+const form      = document.getElementById('check-form');
+const input     = document.getElementById('url-input');
+const submitBtn = document.getElementById('submit-btn');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  let url;
+  try {
+    url = normalizeUrl(input.value.trim());
+  } catch {
+    renderError('Please enter a valid URL (e.g. https://www.example.aem.live).');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Running…';
+  renderLoading();
+
+  const settled = await Promise.allSettled(CHECKS.map(({ run }) => run(url)));
+
+  const results = settled.map((outcome, i) => {
+    if (outcome.status === 'fulfilled') return outcome.value;
+    return {
+      id:       CHECKS[i].id,
+      label:    CHECKS[i].label,
+      status:   'fail',
+      findings: [`Unexpected error: ${outcome.reason?.message ?? String(outcome.reason)}`],
+    };
+  });
+
+  render(results, url);
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Run Checks';
+});
+
+/** Prepend https:// if missing, then validate with URL constructor. */
+function normalizeUrl(raw) {
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  return new URL(withProtocol).href;
+}

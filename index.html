@@ -4,20 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EDS Site Health Checker</title>
-  <!-- Global styles, CSS custom properties, and @media print rules -->
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-  <!-- URL input form: text field + "Run Checks" submit button -->
   <header id="app-header">
+    <h1>EDS Site Health Checker</h1>
+    <form id="check-form">
+      <input
+        id="url-input"
+        type="url"
+        placeholder="https://www.example.aem.live"
+        autocomplete="url"
+        spellcheck="false"
+        required
+      >
+      <button id="submit-btn" type="submit">Run Checks</button>
+    </form>
   </header>
 
-  <!-- Dashboard: populated by scripts/report/dashboard.js after checks complete -->
-  <!-- Contains overall health score, one .check-card per CheckResult, Export PDF button -->
-  <main id="dashboard">
-  </main>
+  <main id="dashboard"></main>
 
-  <!-- Orchestrates checks and hands results to dashboard.js -->
   <script type="module" src="scripts/main.js"></script>
 </body>
 </html>
