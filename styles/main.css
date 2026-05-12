@@ -371,7 +371,36 @@ button {
    13. Print / PDF
    ========================================================================== */
 
+/* Hidden on screen — only rendered when window.print() is called */
+.print-header {
+  display: none;
+}
+
 @media print {
+  .print-header {
+    display: block;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 2px solid #000;
+  }
+
+  .print-header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+  }
+
+  .print-header p {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: #444;
+  }
+
+  .print-header__timestamp {
+    margin-top: var(--space-xs);
+    color: #888;
+  }
+
   #app-header  { display: none; }
   #export-btn  { display: none; }
 
