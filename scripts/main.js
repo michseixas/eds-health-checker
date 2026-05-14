@@ -20,9 +20,15 @@ const CHECKS = [
   { id: 'images',      label: 'Image Routing',       run: runImages      },
 ];
 
-const form      = document.getElementById('check-form');
-const input     = document.getElementById('url-input');
-const submitBtn = document.getElementById('submit-btn');
+const LS_KEY = 'eds-hc-psi-api-key';
+
+const form        = document.getElementById('check-form');
+const input       = document.getElementById('url-input');
+const apiKeyInput = document.getElementById('api-key-input');
+const submitBtn   = document.getElementById('submit-btn');
+
+// Restore saved key on load
+apiKeyInput.value = localStorage.getItem(LS_KEY) ?? '';
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -39,7 +45,12 @@ form.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Running…';
   renderLoading();
 
-  const settled = await Promise.allSettled(CHECKS.map(({ run }) => run(url)));
+  const apiKey = apiKeyInput.value.trim();
+  if (apiKey) localStorage.setItem(LS_KEY, apiKey);
+  else localStorage.removeItem(LS_KEY);
+  const settled = await Promise.allSettled(CHECKS.map(({ id, run }) =>
+    id === 'performance' ? run(url, apiKey) : run(url)
+  ));
 
   const results = settled.map((outcome, i) => {
     if (outcome.status === 'fulfilled') return outcome.value;

@@ -124,7 +124,7 @@ export async function run(url) {
 // ---------------------------------------------------------------------------
 
 async function fetchAndParse(url) {
-  const res = await fetch(url);
+  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
   const html = await res.text();
   return new DOMParser().parseFromString(html, 'text/html');

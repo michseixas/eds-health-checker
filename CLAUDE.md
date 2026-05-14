@@ -33,7 +33,7 @@ unless explicitly asked — it is the orchestrator and changes there affect all 
 - ES module syntax (`import`/`export`) throughout
 - CSS custom properties for all colors/spacing — define tokens in `styles/main.css`,
   never hardcode values elsewhere
-- No external dependencies except jsPDF (vendored in `lib/`) for PDF export
+- No external dependencies — PDF export uses `window.print()` with `@media print` CSS
 - Files are served statically — no server-side code
 
 ## Project structure
@@ -52,7 +52,7 @@ scripts/
     dashboard.js                # Renders .check-card elements into #dashboard
     pdf.js                      # PDF export via window.print() + optional jsPDF
 lib/
-  jspdf.umd.min.js              # Vendored jsPDF — do not modify
+  jspdf.umd.min.js              # Reserved for future jsPDF integration if needed
 .claude/
   settings.json                 # Claude Code project permissions
   commands/

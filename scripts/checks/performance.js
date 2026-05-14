@@ -24,10 +24,11 @@ const METRICS = {
  * @param {string} url
  * @returns {Promise<{id: string, label: string, status: 'pass'|'warn'|'fail', findings: string[]}>}
  */
-export async function run(url) {
+export async function run(url, apiKey = '') {
   let data;
   try {
-    const apiUrl = `${PSI_ENDPOINT}?url=${encodeURIComponent(url)}&strategy=mobile`;
+    const key = apiKey ? `&key=${encodeURIComponent(apiKey)}` : '';
+    const apiUrl = `${PSI_ENDPOINT}?url=${encodeURIComponent(url)}&strategy=mobile${key}`;
     const res = await fetch(apiUrl);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
