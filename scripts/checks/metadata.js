@@ -116,6 +116,15 @@ export async function run(url) {
     label: 'Metadata Completeness',
     status,
     findings,
+    checks: [
+      '<title> present and 30–60 characters',
+      '<meta name="description"> present and 50–160 characters',
+      '<meta property="og:image"> present and routed through EDS media pipeline',
+      '<link rel="canonical"> present and points to production (aem.live)',
+      '<meta property="og:title"> present',
+      '<meta property="og:description"> present',
+      'Page is not set to noindex',
+    ],
   };
 }
 

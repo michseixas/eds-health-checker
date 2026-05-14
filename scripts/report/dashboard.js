@@ -150,6 +150,24 @@ function buildCard(result) {
     card.appendChild(details);
   }
 
+  // For passing cards, show what was verified (collapsed)
+  if (result.status === 'pass' && result.checks?.length > 0) {
+    const details = el('details', 'check-card__criteria');
+
+    const summary = el('summary');
+    summary.textContent = `${result.checks.length} criteria verified`;
+    details.appendChild(summary);
+
+    const list = el('ul');
+    for (const text of result.checks) {
+      const li = el('li');
+      li.textContent = text;
+      list.appendChild(li);
+    }
+    details.appendChild(list);
+    card.appendChild(details);
+  }
+
   return card;
 }
 

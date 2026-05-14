@@ -312,6 +312,54 @@ button {
 
 .check-card__findings li:last-child { border-bottom: none; }
 
+/* Criteria list (pass cards only) — same structure as findings */
+.check-card__criteria {
+  border-top: 1px solid var(--color-border);
+}
+
+.check-card__criteria summary {
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-pass);
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.check-card__criteria summary::-webkit-details-marker { display: none; }
+
+.check-card__criteria summary::before {
+  content: '▶';
+  font-size: 0.6rem;
+  display: inline-block;
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+
+.check-card__criteria[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.check-card__criteria ul {
+  list-style: none;
+  padding: 0 var(--space-lg) var(--space-md);
+}
+
+.check-card__criteria li {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid var(--color-border);
+  line-height: 1.5;
+}
+
+.check-card__criteria li:last-child { border-bottom: none; }
+
 /* ==========================================================================
    11. Loading skeleton
    ========================================================================== */

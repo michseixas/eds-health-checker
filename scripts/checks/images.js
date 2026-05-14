@@ -153,8 +153,17 @@ async function fetchAndParse(url) {
   return new DOMParser().parseFromString(html, 'text/html');
 }
 
+const CHECKS = [
+  'All <img> sources route through EDS media pipeline (media_<hash>)',
+  'No external <img> URLs bypassing EDS CDN and WebP conversion',
+  'No external URLs in <source srcset>',
+  'No inline data: URI images',
+  'All <img> have width and height attributes (CLS prevention)',
+  'All <img> wrapped in <picture> for responsive variants',
+];
+
 function result(status, findings) {
-  return { id: 'images', label: 'Image Routing', status, findings };
+  return { id: 'images', label: 'Image Routing', status, findings, checks: CHECKS };
 }
 
 /**

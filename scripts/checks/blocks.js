@@ -133,6 +133,16 @@ async function fetchAndParse(url) {
   return new DOMParser().parseFromString(html, 'text/html');
 }
 
+const CHECKS = [
+  '<main> element present',
+  'Section <div> elements present inside <main>',
+  'Block names are lowercase-kebab-case',
+  'Each block has at least one child row <div>',
+  'No inline style attributes on block wrappers',
+  'No id attributes on block wrappers',
+  'No inline style attributes on row <div>s',
+];
+
 function result(status, findings) {
-  return { id: 'blocks', label: 'Block Structure', status, findings };
+  return { id: 'blocks', label: 'Block Structure', status, findings, checks: CHECKS };
 }

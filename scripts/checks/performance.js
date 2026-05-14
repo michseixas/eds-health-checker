@@ -99,6 +99,16 @@ export async function run(url, apiKey = '') {
     label: 'Performance',
     status,
     findings,
+    checks: [
+      'Lighthouse performance score ≥ 90/100 (EDS target: 100)',
+      'LCP (Largest Contentful Paint) ≤ 2500 ms',
+      'CLS (Cumulative Layout Shift) ≤ 0.1',
+      'TBT (Total Blocking Time) ≤ 200 ms',
+      'FCP (First Contentful Paint) ≤ 1800 ms',
+      'INP (Interaction to Next Paint) ≤ 200 ms',
+      'Speed Index ≤ 3400 ms',
+      'No high-impact render-blocking opportunities',
+    ],
   };
 }
 
