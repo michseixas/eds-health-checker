@@ -53,6 +53,19 @@ createServer(async (req, res) => {
     }
   }
 
+  // ── Redirect check ──────────────────────────────────────────────────────────
+  if (reqUrl.pathname === '/redirect-check') {
+    const target = reqUrl.searchParams.get('url');
+    if (!target) { res.writeHead(400); return res.end('Missing url parameter'); }
+    try {
+      const r = await fetch(target, { redirect: 'follow', headers: { 'User-Agent': 'EDS-Health-Checker/1.0' } });
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      return res.end(JSON.stringify({ finalUrl: r.url, redirected: r.redirected, status: r.status }));
+    } catch (err) {
+      res.writeHead(502); return res.end(err.message);
+    }
+  }
+
   // ── Static files ────────────────────────────────────────────────────────────
   const filePath = join(ROOT, reqUrl.pathname === '/' ? 'index.html' : reqUrl.pathname);
   try {
