@@ -10,51 +10,49 @@
  */
 
 export async function run(url) {
-  const result = {
-    id: 'headings',
-    label: 'Heading Hierarchy',
-    status: 'pass',
-    findings: [],
-  };
-
   let html;
   try {
     const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
     if (!res.ok) throw new Error(`Proxy returned ${res.status}`);
     html = await res.text();
   } catch (err) {
-    result.status = 'warn';
-    result.findings.push(`Could not fetch page: ${err.message}`);
-    return result;
+    return result('warn', [`Could not fetch page: ${err.message}`]);
   }
 
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const headings = [...doc.querySelectorAll('h1, h2, h3, h4, h5, h6')];
-
   const h1s = headings.filter((h) => h.tagName === 'H1');
+  const findings = [];
+  let hasFail = false;
 
   if (h1s.length === 0) {
-    result.status = 'fail';
-    result.findings.push('No <h1> found on the page.');
+    findings.push('No <h1> found on the page.');
+    hasFail = true;
   } else if (h1s.length > 1) {
-    result.status = 'fail';
-    result.findings.push(`${h1s.length} <h1> elements found — there should be exactly one.`);
+    findings.push(`${h1s.length} <h1> elements found — there should be exactly one.`);
+    hasFail = true;
   } else if (!h1s[0].textContent.trim()) {
-    result.status = 'fail';
-    result.findings.push('<h1> is present but contains no text.');
+    findings.push('<h1> is present but contains no text.');
+    hasFail = true;
   }
 
-  // Check for skipped levels
   const levels = headings.map((h) => parseInt(h.tagName[1], 10));
   for (let i = 1; i < levels.length; i++) {
-    const diff = levels[i] - levels[i - 1];
-    if (diff > 1) {
-      if (result.status !== 'fail') result.status = 'warn';
-      result.findings.push(
-        `Heading level skipped: h${levels[i - 1]} → h${levels[i]} (missing h${levels[i - 1] + 1}).`
-      );
+    if (levels[i] - levels[i - 1] > 1) {
+      findings.push(`Heading level skipped: h${levels[i - 1]} → h${levels[i]} (missing h${levels[i - 1] + 1}).`);
     }
   }
 
-  return result;
+  const status = hasFail ? 'fail' : findings.length > 0 ? 'warn' : 'pass';
+  return result(status, findings);
+}
+
+const CHECKS = [
+  'Exactly one <h1> present on the page',
+  '<h1> contains non-empty text',
+  'No heading levels are skipped (e.g. h1 → h3)',
+];
+
+function result(status, findings) {
+  return { id: 'headings', label: 'Heading Hierarchy', status, findings, checks: CHECKS };
 }

@@ -13,6 +13,7 @@ import { run as runBlocks } from './checks/blocks.js';
 import { run as runImages } from './checks/images.js';
 import { run as runRedirect } from './checks/redirect.js';
 import { run as runHeadings } from './checks/headings.js';
+import { run as runLinks   } from './checks/links.js';
 import { render, renderLoading, renderError } from './report/dashboard.js';
 
 const CHECKS = [
@@ -22,6 +23,7 @@ const CHECKS = [
   { id: 'images',      label: 'Image Routing',       run: runImages      },
   { id: 'redirect',    label: 'Redirect Check',      run: runRedirect    },
   { id: 'headings',    label: 'Heading Hierarchy',   run: runHeadings    },
+  { id: 'links',       label: 'Link Health',          run: runLinks       },
 ];
 
 const LS_KEY = 'eds-hc-psi-api-key';
