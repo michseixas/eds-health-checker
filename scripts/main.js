@@ -14,6 +14,7 @@ import { run as runImages } from './checks/images.js';
 import { run as runRedirect } from './checks/redirect.js';
 import { run as runHeadings } from './checks/headings.js';
 import { run as runLinks   } from './checks/links.js';
+import { run as runFonts   } from './checks/fonts.js';
 import { render, renderLoading, renderError } from './report/dashboard.js';
 
 const CHECKS = [
@@ -24,6 +25,7 @@ const CHECKS = [
   { id: 'redirect',    label: 'Redirect Check',      run: runRedirect    },
   { id: 'headings',    label: 'Heading Hierarchy',   run: runHeadings    },
   { id: 'links',       label: 'Link Health',          run: runLinks       },
+  { id: 'fonts',       label: 'Font Loading',         run: runFonts       },
 ];
 
 const LS_KEY = 'eds-hc-psi-api-key';
