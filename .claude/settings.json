@@ -8,5 +8,8 @@
       "Bash(npm ci*)"
     ],
     "deny": []
-  }
+  },
+  "attribution": {
+  "commit": ""
+}
 }
