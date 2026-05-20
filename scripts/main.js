@@ -15,7 +15,8 @@ import { run as runRedirect } from './checks/redirect.js';
 import { run as runHeadings } from './checks/headings.js';
 import { run as runLinks   } from './checks/links.js';
 import { run as runFonts        } from './checks/fonts.js';
-import { run as runInlineStyles } from './checks/inline-styles.js';
+import { run as runInlineStyles  } from './checks/inline-styles.js';
+import { run as runAccessibility } from './checks/accessibility.js';
 import { render, renderLoading, renderError } from './report/dashboard.js';
 
 const CHECKS = [
@@ -27,7 +28,8 @@ const CHECKS = [
   { id: 'headings',    label: 'Heading Hierarchy',   run: runHeadings    },
   { id: 'links',       label: 'Link Health',          run: runLinks       },
   { id: 'fonts',         label: 'Font Loading',         run: runFonts        },
-  { id: 'inline-styles', label: 'Inline Styles',        run: runInlineStyles },
+  { id: 'inline-styles',  label: 'Inline Styles',        run: runInlineStyles  },
+  { id: 'accessibility',  label: 'Accessibility',        run: runAccessibility },
 ];
 
 const LS_KEY = 'eds-hc-psi-api-key';
