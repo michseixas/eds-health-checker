@@ -19,6 +19,7 @@ import { run as runInlineStyles  } from './checks/inline-styles.js';
 import { run as runAccessibility } from './checks/accessibility.js';
 import { run as runLazyLoading   } from './checks/lazy-loading.js';
 import { run as runScriptLoading } from './checks/script-loading.js';
+import { run as runDuplicateIds  } from './checks/duplicate-ids.js';
 import { render, renderLoading, renderError } from './report/dashboard.js';
 
 const CHECKS = [
@@ -34,6 +35,7 @@ const CHECKS = [
   { id: 'accessibility',  label: 'Accessibility',        run: runAccessibility },
   { id: 'lazy-loading',   label: 'Lazy Loading',         run: runLazyLoading   },
   { id: 'script-loading', label: 'Script Loading',       run: runScriptLoading },
+  { id: 'duplicate-ids',  label: 'Duplicate IDs',        run: runDuplicateIds  },
 ];
 
 const LS_KEY = 'eds-hc-psi-api-key';
