@@ -22,6 +22,7 @@ import { run as runScriptLoading } from './checks/script-loading.js';
 import { run as runDuplicateIds   } from './checks/duplicate-ids.js';
 import { run as runStructuredData } from './checks/structured-data.js';
 import { run as runAiReadiness   } from './checks/ai-readiness.js';
+import { run as runSitemap       } from './checks/sitemap.js';
 import { render, renderLoading, renderError } from './report/dashboard.js';
 
 const CHECKS = [
@@ -40,6 +41,7 @@ const CHECKS = [
   { id: 'duplicate-ids',   label: 'Duplicate IDs',        run: runDuplicateIds   },
   { id: 'structured-data', label: 'Structured Data',      run: runStructuredData },
   { id: 'ai-readiness',    label: 'AI Readiness',         run: runAiReadiness    },
+  { id: 'sitemap',         label: 'Sitemap',              run: runSitemap        },
 ];
 
 const LS_KEY = 'eds-hc-psi-api-key';
