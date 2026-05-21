@@ -104,3 +104,9 @@ lib/
 - `GET /proxy?url=<url>` — fetches target URL server-side, returns body with CORS headers
 - `GET /redirect-check?url=<url>` — follows redirects, returns `{ finalUrl, redirected, status }`
 - `GET /*` — static file server from project root
+
+
+
+
+JUST CHECKING CHECKPOINTS 
+THIS WILL BE DELETED IF ALL GOES WELL.
