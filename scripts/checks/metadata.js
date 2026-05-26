@@ -16,6 +16,8 @@
  *   - title or description absent entirely → fail
  */
 
+import { fetchAndParse } from '../lib/fetch.js';
+
 /** Fields that must be present — absence → fail */
 const REQUIRED = ['title', 'description'];
 
@@ -41,12 +43,7 @@ export async function run(url) {
   try {
     doc = await fetchAndParse(url);
   } catch (err) {
-    return {
-      id: 'metadata',
-      label: 'Metadata Completeness',
-      status: 'fail',
-      findings: [`Could not fetch page HTML: ${err.message}`],
-    };
+    return result('fail', [`Could not fetch page HTML: ${err.message}`]);
   }
 
   const findings = [];
@@ -111,32 +108,25 @@ export async function run(url) {
     status = 'pass';
   }
 
-  return {
-    id: 'metadata',
-    label: 'Metadata Completeness',
-    status,
-    findings,
-    checks: [
-      '<title> present and 30–60 characters',
-      '<meta name="description"> present and 50–160 characters',
-      '<meta property="og:image"> present and routed through EDS media pipeline',
-      '<link rel="canonical"> present and points to production (aem.live)',
-      '<meta property="og:title"> present',
-      '<meta property="og:description"> present',
-      'Page is not set to noindex',
-    ],
-  };
+  return result(status, findings);
 }
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
+const CHECKS = [
+  '<title> present and 30–60 characters',
+  '<meta name="description"> present and 50–160 characters',
+  '<meta property="og:image"> present and routed through EDS media pipeline',
+  '<link rel="canonical"> present and points to production (aem.live)',
+  '<meta property="og:title"> present',
+  '<meta property="og:description"> present',
+  'Page is not set to noindex',
+];
+
+function result(status, findings) {
+  return { id: 'metadata', label: 'Metadata Completeness', status, findings, checks: CHECKS };
 }
 
 /**

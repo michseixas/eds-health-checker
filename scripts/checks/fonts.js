@@ -12,6 +12,8 @@
  *   WARN — @font-face src: url(...) referencing an external origin
  */
 
+import { fetchAndParse, truncate } from '../lib/fetch.js';
+
 /** Known font CDN hostnames (substrings matched against URL hostname) */
 const FONT_CDNS = [
   'fonts.googleapis.com',
@@ -100,13 +102,6 @@ export async function run(url) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
-
 /**
  * Return the matched CDN label if the href resolves to a known font CDN, else null.
  */
@@ -157,10 +152,6 @@ function extractFontFaceUrls(css, pageUrl) {
     }
   }
   return urls;
-}
-
-function truncate(src, max = 80) {
-  return src.length <= max ? src : `${src.slice(0, max)}…`;
 }
 
 const CHECKS = [

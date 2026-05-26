@@ -13,7 +13,7 @@
  *   - loading="eager" is an explicit opt-out of lazy loading → warn
  */
 
-const MAX_FINDINGS = 5;
+import { fetchAndParse, truncate, addCapped } from '../lib/fetch.js';
 
 /**
  * @param {string} url
@@ -70,24 +70,6 @@ export async function run(url) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
-
-function addCapped(findings, items, format, categoryLabel) {
-  const shown = items.slice(0, MAX_FINDINGS);
-  const rest = items.length - shown.length;
-  for (const item of shown) findings.push(format(item));
-  if (rest > 0) findings.push(`…and ${rest} more ${categoryLabel}.`);
-}
-
-function truncate(src, max = 80) {
-  return src.length <= max ? src : `${src.slice(0, max)}…`;
-}
 
 const CHECKS = [
   'LCP image (first <img> in <main>) does not have loading="lazy"',

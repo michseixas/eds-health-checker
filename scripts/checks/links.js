@@ -6,7 +6,7 @@
  * suspicious href values, and links with no accessible label.
  */
 
-const MAX_PER_CATEGORY = 5;
+import { fetchAndParse, truncate, addCapped } from '../lib/fetch.js';
 /** Same-origin links sampled for live 404/5xx probing */
 const MAX_PROBE = 10;
 
@@ -125,13 +125,6 @@ export async function run(url) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
-
 const CHECKS = [
   'No same-origin links return 4xx/5xx (sampled up to 10)',
   'All external links use HTTPS',
@@ -144,13 +137,4 @@ function result(status, findings) {
   return { id: 'links', label: 'Link Health', status, findings, checks: CHECKS };
 }
 
-function addCapped(findings, items, format, categoryLabel) {
-  const shown = items.slice(0, MAX_PER_CATEGORY);
-  const rest = items.length - shown.length;
-  for (const item of shown) findings.push(format(item));
-  if (rest > 0) findings.push(`…and ${rest} more ${categoryLabel}.`);
-}
 
-function truncate(src, max = 80) {
-  return src.length <= max ? src : `${src.slice(0, max)}…`;
-}

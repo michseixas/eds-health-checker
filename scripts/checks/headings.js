@@ -5,21 +5,18 @@
  *  - Exactly one <h1> (zero or multiple = fail)
  *  - <h1> text is not empty
  *  - No skipped heading levels (e.g. h1 → h3 without h2 = warn)
- *
- * @returns {Promise<import('../main.js').CheckResult>}
  */
 
+import { fetchAndParse } from '../lib/fetch.js';
+
 export async function run(url) {
-  let html;
+  let doc;
   try {
-    const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-    if (!res.ok) throw new Error(`Proxy returned ${res.status}`);
-    html = await res.text();
+    doc = await fetchAndParse(url);
   } catch (err) {
     return result('warn', [`Could not fetch page: ${err.message}`]);
   }
 
-  const doc = new DOMParser().parseFromString(html, 'text/html');
   const headings = [...doc.querySelectorAll('h1, h2, h3, h4, h5, h6')];
   const h1s = headings.filter((h) => h.tagName === 'H1');
   const findings = [];

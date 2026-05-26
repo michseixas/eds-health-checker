@@ -23,7 +23,9 @@ import { run as runDuplicateIds   } from './checks/duplicate-ids.js';
 import { run as runStructuredData } from './checks/structured-data.js';
 import { run as runAiReadiness   } from './checks/ai-readiness.js';
 import { run as runSitemap       } from './checks/sitemap.js';
-import { render, renderLoading, renderError } from './report/dashboard.js';
+import { run as runViewport      } from './checks/viewport.js';
+import { run as runLang          } from './checks/lang.js';
+import { renderLoading, renderCard, renderSummary, renderError } from './report/dashboard.js';
 
 const CHECKS = [
   { id: 'performance', label: 'Performance',        run: runPerformance },
@@ -42,6 +44,8 @@ const CHECKS = [
   { id: 'structured-data', label: 'Structured Data',      run: runStructuredData },
   { id: 'ai-readiness',    label: 'AI Readiness',         run: runAiReadiness    },
   { id: 'sitemap',         label: 'Sitemap',              run: runSitemap        },
+  { id: 'viewport',        label: 'Viewport Meta',        run: runViewport       },
+  { id: 'lang',            label: 'Language Attribute',   run: runLang           },
 ];
 
 const LS_KEY = 'eds-hc-psi-api-key';
@@ -67,26 +71,29 @@ form.addEventListener('submit', async (e) => {
 
   submitBtn.disabled = true;
   submitBtn.textContent = 'Running…';
-  renderLoading();
+  renderLoading(CHECKS.map((c) => c.id));
 
   const apiKey = apiKeyInput.value.trim();
   if (apiKey) localStorage.setItem(LS_KEY, apiKey);
   else localStorage.removeItem(LS_KEY);
-  const settled = await Promise.allSettled(CHECKS.map(({ id, run }) =>
-    id === 'performance' ? run(url, apiKey) : run(url)
-  ));
 
-  const results = settled.map((outcome, i) => {
-    if (outcome.status === 'fulfilled') return outcome.value;
-    return {
-      id:       CHECKS[i].id,
-      label:    CHECKS[i].label,
-      status:   'fail',
-      findings: [`Unexpected error: ${outcome.reason?.message ?? String(outcome.reason)}`],
-    };
+  const promises = CHECKS.map(({ id, label, run }) => {
+    const p = id === 'performance' ? run(url, apiKey) : run(url);
+    return p.then(
+      (result) => { renderCard(result); return result; },
+      (reason) => {
+        const fallback = {
+          id, label, status: 'fail',
+          findings: [`Unexpected error: ${reason?.message ?? String(reason)}`],
+        };
+        renderCard(fallback);
+        return fallback;
+      },
+    );
   });
 
-  render(results, url);
+  const results = await Promise.all(promises);
+  renderSummary(results, url);
 
   submitBtn.disabled = false;
   submitBtn.textContent = 'Run Checks';

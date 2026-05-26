@@ -14,6 +14,8 @@
  *   WARN — none of the high-value schemas present
  */
 
+import { fetchAndParse } from '../lib/fetch.js';
+
 /** Schemas with the most impact for AI search visibility */
 const HIGH_VALUE_SCHEMAS = [
   'Organization',
@@ -118,13 +120,6 @@ export async function run(url) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
 
 const CHECKS = [
   'At least one <script type="application/ld+json"> block present',

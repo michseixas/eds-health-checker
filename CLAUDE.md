@@ -35,7 +35,7 @@ When adding a new check:
 3. One check per commit/PR — this is the established practice
 4. Do NOT modify `main.js` for anything other than wiring in a new check
 
-## Current checks (16)
+## Current checks (18)
 
 | File | Label | What it audits |
 |---|---|---|
@@ -54,6 +54,9 @@ When adding a new check:
 | `duplicate-ids.js` | Duplicate IDs | any id attribute appearing more than once in the document |
 | `structured-data.js` | Structured Data | JSON-LD presence, valid JSON, @context/@type, high-value schemas |
 | `ai-readiness.js` | AI Readiness | llms.txt at domain root, robots.txt AI crawler policy |
+| `sitemap.js` | Sitemap | /sitemap.xml reachability, valid XML, loc entries, URL in sitemap, robots Sitemap: directive |
+| `viewport.js` | Viewport Meta | `<meta name="viewport">` presence, width=device-width, initial-scale=1 |
+| `lang.js` | Language Attribute | `<html lang>` presence, non-empty, valid BCP 47 tag |
 
 ## Conventions
 - Vanilla JS only — no frameworks, no build step
@@ -63,6 +66,11 @@ When adding a new check:
 - No external dependencies — PDF export uses `window.print()` with `@media print` CSS
 - All page fetches go through `/proxy?url=...` on the local dev server (bypasses CORS)
 - Domain-root files (robots.txt, llms.txt, sitemap.xml) are also fetched via `/proxy`
+- Shared fetch helpers live in `scripts/lib/fetch.js` — import from there, never redefine locally:
+  - `fetchAndParse(url)` → parses HTML via proxy, throws on error
+  - `fetchRaw(url)` → returns `{ ok, body }`, never throws
+  - `truncate(src, max?)` → truncates a string with …
+  - `addCapped(findings, items, format, label, max?)` → capped findings list
 
 ## Project structure
 ```
@@ -70,7 +78,9 @@ index.html                          # Entry point — URL form + #dashboard moun
 styles/
   main.css                          # Global styles, CSS custom properties, @media print
 scripts/
-  main.js                           # Orchestrator: runs all checks, calls dashboard.render()
+  main.js                           # Orchestrator: runs all checks, progressive render
+  lib/
+    fetch.js                        # Shared helpers: fetchAndParse, fetchRaw, truncate, addCapped
   checks/
     performance.js                  # PageSpeed Insights API — CWV / Lighthouse score
     metadata.js                     # EDS metadata completeness
@@ -87,8 +97,11 @@ scripts/
     duplicate-ids.js                # Duplicate id attributes
     structured-data.js              # JSON-LD structured data
     ai-readiness.js                 # llms.txt + robots.txt AI crawler policy
+    sitemap.js                      # sitemap.xml reachability and content
+    viewport.js                     # Viewport meta tag
+    lang.js                         # HTML lang attribute (WCAG 3.1.1)
   report/
-    dashboard.js                    # Renders check cards into #dashboard
+    dashboard.js                    # Renders check cards into #dashboard (progressive)
     pdf.js                          # PDF export via window.print()
 server.js                           # Dev server: static files + /proxy + /redirect-check
 lib/

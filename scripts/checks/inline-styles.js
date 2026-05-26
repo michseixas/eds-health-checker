@@ -17,6 +17,8 @@
  * CSS properties that map to EDS design tokens and should never be inlined.
  * Setting these inline locks the visual output and bypasses CSS custom properties.
  */
+import { fetchAndParse, truncate } from '../lib/fetch.js';
+
 const THEMING_PROPS = [
   'color',
   'background',
@@ -114,13 +116,6 @@ export async function run(url) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
-
 function usesThemingProp(styleAttr) {
   return extractThemingProps(styleAttr).length > 0;
 }
@@ -134,9 +129,7 @@ function extractThemingProps(styleAttr) {
   });
 }
 
-function truncate(src, max = 80) {
-  return src.length <= max ? src : `${src.slice(0, max)}…`;
-}
+
 
 const CHECKS = [
   'No <style> tags inside <body>',

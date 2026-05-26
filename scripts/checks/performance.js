@@ -37,12 +37,7 @@ export async function run(url, apiKey = '') {
     }
     data = await res.json();
   } catch (err) {
-    return {
-      id: 'performance',
-      label: 'Performance',
-      status: 'fail',
-      findings: [`PageSpeed Insights API error: ${err.message}`],
-    };
+    return result('fail', [`PageSpeed Insights API error: ${err.message}`]);
   }
 
   const lhr = data.lighthouseResult;
@@ -50,12 +45,7 @@ export async function run(url, apiKey = '') {
   const rawScore = lhr?.categories?.performance?.score ?? null;
 
   if (rawScore === null) {
-    return {
-      id: 'performance',
-      label: 'Performance',
-      status: 'fail',
-      findings: ['PageSpeed Insights returned no performance score for this URL.'],
-    };
+    return result('fail', ['PageSpeed Insights returned no performance score for this URL.']);
   }
 
   const score = Math.round(rawScore * 100);
@@ -93,27 +83,26 @@ export async function run(url, apiKey = '') {
   }
 
   const status = score >= 90 ? 'pass' : score >= 70 ? 'warn' : 'fail';
-
-  return {
-    id: 'performance',
-    label: 'Performance',
-    status,
-    findings,
-    checks: [
-      'Lighthouse performance score ≥ 90/100 (EDS target: 100)',
-      'LCP (Largest Contentful Paint) ≤ 2500 ms',
-      'CLS (Cumulative Layout Shift) ≤ 0.1',
-      'TBT (Total Blocking Time) ≤ 200 ms',
-      'FCP (First Contentful Paint) ≤ 1800 ms',
-      'INP (Interaction to Next Paint) ≤ 200 ms',
-      'Speed Index ≤ 3400 ms',
-      'No high-impact render-blocking opportunities',
-    ],
-  };
+  return result(status, findings);
 }
 
 /** Fallback formatter when displayValue is absent */
 function formatValue(value, unit) {
   if (unit === 'ms') return `${Math.round(value)} ms`;
   return String(Math.round(value * 100) / 100);
+}
+
+const CHECKS = [
+  'Lighthouse performance score ≥ 90/100 (EDS target: 100)',
+  'LCP (Largest Contentful Paint) ≤ 2500 ms',
+  'CLS (Cumulative Layout Shift) ≤ 0.1',
+  'TBT (Total Blocking Time) ≤ 200 ms',
+  'FCP (First Contentful Paint) ≤ 1800 ms',
+  'INP (Interaction to Next Paint) ≤ 200 ms',
+  'Speed Index ≤ 3400 ms',
+  'No high-impact render-blocking opportunities',
+];
+
+function result(status, findings) {
+  return { id: 'performance', label: 'Performance', status, findings, checks: CHECKS };
 }

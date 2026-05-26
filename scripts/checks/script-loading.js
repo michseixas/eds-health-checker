@@ -16,6 +16,8 @@
  *           the JS engine parses and compiles the inline code)
  */
 
+import { fetchAndParse, truncate } from '../lib/fetch.js';
+
 /** Inline script size threshold in bytes above which we warn */
 const INLINE_WARN_BYTES = 2048;
 
@@ -75,17 +77,6 @@ export async function run(url) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
-
-function truncate(src, max = 80) {
-  return src.length <= max ? src : `${src.slice(0, max)}…`;
-}
 
 const CHECKS = [
   'No render-blocking <script src> in <head> (must have defer or type="module")',

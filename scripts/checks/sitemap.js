@@ -10,10 +10,12 @@
  *   FAIL — /sitemap.xml not reachable (404 or network error)
  *   FAIL — sitemap found but response is not valid XML
  *   FAIL — XML root is not <urlset> or <sitemapindex> (not a valid sitemap)
- *   WARN — sitemap contains no <loc> entries
+ *   FAIL — sitemap contains no <loc> entries
  *   WARN — audited page URL not found in any <loc> entry
  *   WARN — robots.txt does not reference the sitemap via a Sitemap: directive
  */
+
+import { fetchRaw } from '../lib/fetch.js';
 
 /**
  * @param {string} url
@@ -105,12 +107,6 @@ export async function run(url) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function fetchRaw(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  const body = res.ok ? await res.text() : '';
-  return { ok: res.ok, body };
-}
 
 /** Strip trailing slash and lowercase for loose URL comparison. */
 function normalizeForCompare(url) {

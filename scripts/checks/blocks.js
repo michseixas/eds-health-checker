@@ -31,6 +31,8 @@
  *   WARN  — <main> has no section divs (unexpected for a content page)
  */
 
+import { fetchAndParse } from '../lib/fetch.js';
+
 /** Matches valid EDS block names: lowercase letters, digits, hyphens; must start with a letter */
 const BLOCK_NAME_RE = /^[a-z][a-z0-9-]*$/;
 
@@ -125,13 +127,6 @@ export async function run(url) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
 
 const CHECKS = [
   '<main> element present',

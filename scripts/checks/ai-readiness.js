@@ -16,6 +16,8 @@
  * Both resources are fetched via the /proxy endpoint.
  */
 
+import { fetchRaw } from '../lib/fetch.js';
+
 /** AI crawler user-agents to look for in robots.txt */
 const AI_AGENTS = [
   'GPTBot',           // OpenAI
@@ -38,8 +40,8 @@ export async function run(url) {
 
   // Run both fetches in parallel
   const [llmsResult, robotsResult] = await Promise.allSettled([
-    fetchText(`${origin}/llms.txt`),
-    fetchText(`${origin}/robots.txt`),
+    fetchRaw(`${origin}/llms.txt`),
+    fetchRaw(`${origin}/robots.txt`),
   ]);
 
   // 1. llms.txt
@@ -97,16 +99,6 @@ export async function run(url) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Fetch a URL via the proxy and return { ok, body }.
- * Never throws — returns { ok: false } on network/proxy error.
- */
-async function fetchText(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  const body = res.ok ? await res.text() : '';
-  return { ok: res.ok, body };
-}
 
 /**
  * Check whether a given user-agent is blocked in the robots.txt content.

@@ -27,11 +27,41 @@ export function render(results, url) {
   dashboard.appendChild(buildGrid(results));
 }
 
-/** Show four skeleton cards while checks are in flight. */
-export function renderLoading() {
+/**
+ * Pre-render N skeleton cards, each tagged with its check id so renderCard()
+ * can swap them in as checks resolve.
+ * @param {string[]} checkIds  Ordered list of check ids (matches CHECKS in main.js)
+ */
+export function renderLoading(checkIds) {
   clear();
   dashboard.appendChild(buildLoadingSummary());
-  dashboard.appendChild(buildLoadingGrid());
+  const grid = el('div', 'check-grid');
+  for (const id of checkIds) {
+    const card = buildLoadingCard();
+    card.dataset.checkId = id;
+    grid.appendChild(card);
+  }
+  dashboard.appendChild(grid);
+}
+
+/**
+ * Replace the skeleton card for result.id with a fully rendered check card.
+ * Called progressively as each check resolves.
+ * @param {{id:string, label:string, status:string, findings:string[], checks?:string[]}} result
+ */
+export function renderCard(result) {
+  const slot = dashboard.querySelector(`.check-card[data-check-id="${result.id}"]`);
+  if (slot) slot.replaceWith(buildCard(result));
+}
+
+/**
+ * Update the summary bar once all checks have resolved.
+ * @param {Array<{id:string, label:string, status:string, findings:string[]}>} results
+ * @param {string} url
+ */
+export function renderSummary(results, url) {
+  const existing = dashboard.querySelector('.score-summary');
+  if (existing) existing.replaceWith(buildSummary(results, url));
 }
 
 /**
@@ -60,6 +90,12 @@ function buildSummary(results, url) {
   const urlLine = el('p', 'score-summary__url');
   urlLine.textContent = url;
   section.appendChild(urlLine);
+
+  // Pass-rate headline
+  const total = results.length;
+  const passRate = el('p', 'score-summary__pass-rate');
+  passRate.textContent = `${counts.pass} of ${total} checks passed`;
+  section.appendChild(passRate);
 
   // Badge + per-status counts + export button
   const meta = el('div', 'score-summary__meta');
@@ -103,11 +139,6 @@ function buildGrid(results) {
   return grid;
 }
 
-function buildLoadingGrid() {
-  const grid = el('div', 'check-grid');
-  for (let i = 0; i < 4; i++) grid.appendChild(buildLoadingCard());
-  return grid;
-}
 
 function buildCard(result) {
   const card = el('div', `check-card check-card--${result.status}`);

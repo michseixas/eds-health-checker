@@ -167,6 +167,12 @@ button {
   white-space: nowrap;
 }
 
+.score-summary__pass-rate {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
 .score-summary__meta {
   display: flex;
   align-items: center;

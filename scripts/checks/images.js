@@ -16,8 +16,7 @@
 /** Matches EDS media pipeline filenames: media_<hex-hash>.<ext> */
 const MEDIA_PIPELINE_RE = /\/media_[a-f0-9]/i;
 
-/** Max findings reported per category before summarising the remainder */
-const MAX_PER_CATEGORY = 5;
+import { fetchAndParse, truncate, addCapped } from '../lib/fetch.js';
 
 /**
  * @param {string} url
@@ -146,13 +145,6 @@ export async function run(url) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
-
 const CHECKS = [
   'All <img> sources route through EDS media pipeline (media_<hash>)',
   'No external <img> URLs bypassing EDS CDN and WebP conversion',
@@ -199,24 +191,4 @@ function parseSrcset(srcset) {
     .filter(Boolean);
 }
 
-/**
- * Add up to MAX_PER_CATEGORY individual findings, then a summary line for the rest.
- * @param {string[]} findings  target array to push into
- * @param {string[]} items     source list of URLs/values
- * @param {(item: string) => string} format  finding message formatter
- * @param {string} categoryLabel  used in the overflow summary line
- */
-function addCapped(findings, items, format, categoryLabel) {
-  const shown = items.slice(0, MAX_PER_CATEGORY);
-  const rest = items.length - shown.length;
-  for (const item of shown) findings.push(format(item));
-  if (rest > 0) findings.push(`…and ${rest} more ${categoryLabel}.`);
-}
 
-/**
- * Shorten long URLs for display while keeping them identifiable.
- * @param {string} src
- */
-function truncate(src, max = 80) {
-  return src.length <= max ? src : `${src.slice(0, max)}…`;
-}

@@ -12,7 +12,7 @@
  *   WARN — Inline color + background-color with contrast ratio below 4.5:1 (WCAG 1.4.3)
  */
 
-const MAX_FINDINGS = 5;
+import { fetchAndParse, truncate, addCapped } from '../lib/fetch.js';
 
 /**
  * @param {string} url
@@ -127,13 +127,6 @@ export async function run(url) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
-
 /** Check if a form control has an accessible label via any standard mechanism. */
 function hasAccessibleLabel(el, doc) {
   if (el.getAttribute('aria-label')?.trim()) return true;
@@ -224,17 +217,6 @@ function contrastRatio(c1, c2) {
   const lighter = Math.max(l1, l2);
   const darker = Math.min(l1, l2);
   return (lighter + 0.05) / (darker + 0.05);
-}
-
-function addCapped(findings, items, format, categoryLabel) {
-  const shown = items.slice(0, MAX_FINDINGS);
-  const rest = items.length - shown.length;
-  for (const item of shown) findings.push(format(item));
-  if (rest > 0) findings.push(`…and ${rest} more ${categoryLabel}.`);
-}
-
-function truncate(src, max = 80) {
-  return src.length <= max ? src : `${src.slice(0, max)}…`;
 }
 
 const CHECKS = [

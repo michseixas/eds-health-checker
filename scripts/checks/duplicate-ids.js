@@ -14,6 +14,8 @@
  *   FAIL — any ID appears more than once in the document
  */
 
+import { fetchAndParse } from '../lib/fetch.js';
+
 /**
  * @param {string} url
  * @returns {Promise<{id: string, label: string, status: 'pass'|'warn'|'fail', findings: string[]}>}
@@ -56,13 +58,6 @@ export async function run(url) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function fetchAndParse(url) {
-  const res = await fetch(`/proxy?url=${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
-  return new DOMParser().parseFromString(html, 'text/html');
-}
 
 const CHECKS = [
   'All id attributes are unique within the document',
