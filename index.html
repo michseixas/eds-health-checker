@@ -14,10 +14,12 @@
         id="url-input"
         type="url"
         placeholder="https://www.example.aem.live"
-        autocomplete="url"
+        list="url-history"
+        autocomplete="off"
         spellcheck="false"
         required
       >
+      <datalist id="url-history"></datalist>
       <input
         id="api-key-input"
         type="password"

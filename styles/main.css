@@ -194,7 +194,24 @@ button {
   font-weight: 500;
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: outline 0.1s, filter 0.1s;
 }
+
+.score-summary__count:hover {
+  filter: brightness(0.93);
+}
+
+.score-summary__count[aria-pressed="true"] {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+/* Filter: hide cards that don't match the active status */
+.check-grid[data-filter="pass"] .check-card:not(.check-card--pass) { display: none; }
+.check-grid[data-filter="warn"] .check-card:not(.check-card--warn) { display: none; }
+.check-grid[data-filter="fail"] .check-card:not(.check-card--fail) { display: none; }
 
 /* ==========================================================================
    7. Status colour utilities (used on badges, counts, card borders)

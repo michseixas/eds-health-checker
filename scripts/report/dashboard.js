@@ -105,8 +105,10 @@ function buildSummary(results, url) {
   meta.appendChild(badge);
 
   for (const [status, count] of Object.entries(counts)) {
-    const pill = el('span', `score-summary__count status-${status}`);
+    const pill = el('button', `score-summary__count status-${status}`);
     pill.textContent = `${count} ${status}`;
+    pill.setAttribute('aria-pressed', 'false');
+    pill.addEventListener('click', () => toggleFilter(status, pill));
     meta.appendChild(pill);
   }
 
@@ -209,6 +211,29 @@ function buildLoadingCard() {
   header.appendChild(skeleton('skeleton--line skeleton--short'));
   card.appendChild(header);
   return card;
+}
+
+// ---------------------------------------------------------------------------
+// Filter
+// ---------------------------------------------------------------------------
+
+function toggleFilter(status, btn) {
+  const grid = dashboard.querySelector('.check-grid');
+  if (!grid) return;
+
+  const isActive = btn.getAttribute('aria-pressed') === 'true';
+
+  // Reset all pills first
+  dashboard.querySelectorAll('.score-summary__count').forEach((p) => {
+    p.setAttribute('aria-pressed', 'false');
+  });
+
+  if (isActive) {
+    delete grid.dataset.filter;
+  } else {
+    btn.setAttribute('aria-pressed', 'true');
+    grid.dataset.filter = status;
+  }
 }
 
 // ---------------------------------------------------------------------------

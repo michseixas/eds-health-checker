@@ -48,15 +48,35 @@ const CHECKS = [
   { id: 'lang',            label: 'Language Attribute',   run: runLang           },
 ];
 
-const LS_KEY = 'eds-hc-psi-api-key';
+const LS_KEY         = 'eds-hc-psi-api-key';
+const LS_HISTORY_KEY = 'eds-hc-url-history';
 
-const form        = document.getElementById('check-form');
-const input       = document.getElementById('url-input');
-const apiKeyInput = document.getElementById('api-key-input');
-const submitBtn   = document.getElementById('submit-btn');
+const form              = document.getElementById('check-form');
+const input             = document.getElementById('url-input');
+const apiKeyInput       = document.getElementById('api-key-input');
+const submitBtn         = document.getElementById('submit-btn');
+const urlHistoryDatalist = document.getElementById('url-history');
 
-// Restore saved key on load
+// Restore saved key and URL history on load
 apiKeyInput.value = localStorage.getItem(LS_KEY) ?? '';
+loadHistory();
+
+function loadHistory() {
+  const history = JSON.parse(localStorage.getItem(LS_HISTORY_KEY) ?? '[]');
+  urlHistoryDatalist.innerHTML = '';
+  for (const h of history) {
+    const opt = document.createElement('option');
+    opt.value = h;
+    urlHistoryDatalist.appendChild(opt);
+  }
+}
+
+function saveToHistory(url) {
+  let history = JSON.parse(localStorage.getItem(LS_HISTORY_KEY) ?? '[]');
+  history = [url, ...history.filter((h) => h !== url)].slice(0, 10);
+  localStorage.setItem(LS_HISTORY_KEY, JSON.stringify(history));
+  loadHistory();
+}
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -69,6 +89,7 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
+  saveToHistory(url);
   submitBtn.disabled = true;
   submitBtn.textContent = 'Running…';
   renderLoading(CHECKS.map((c) => c.id));
