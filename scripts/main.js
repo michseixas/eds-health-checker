@@ -25,7 +25,7 @@ import { run as runAiReadiness   } from './checks/ai-readiness.js';
 import { run as runSitemap       } from './checks/sitemap.js';
 import { run as runViewport      } from './checks/viewport.js';
 import { run as runLang          } from './checks/lang.js';
-import { renderLoading, renderCard, renderSummary, renderError } from './report/dashboard.js';
+import { renderLoading, renderCard, renderSummary, renderError, updateProgress } from './report/dashboard.js';
 
 const CHECKS = [
   { id: 'performance', label: 'Performance',        run: runPerformance },
@@ -92,22 +92,23 @@ form.addEventListener('submit', async (e) => {
   saveToHistory(url);
   submitBtn.disabled = true;
   submitBtn.textContent = 'Running…';
-  renderLoading(CHECKS.map((c) => c.id));
+  renderLoading(CHECKS);
 
   const apiKey = apiKeyInput.value.trim();
   if (apiKey) localStorage.setItem(LS_KEY, apiKey);
   else localStorage.removeItem(LS_KEY);
 
+  let done = 0;
   const promises = CHECKS.map(({ id, label, run }) => {
     const p = id === 'performance' ? run(url, apiKey) : run(url);
     return p.then(
-      (result) => { renderCard(result); return result; },
+      (result) => { renderCard(result); updateProgress(++done, CHECKS.length); return result; },
       (reason) => {
         const fallback = {
           id, label, status: 'fail',
           findings: [`Unexpected error: ${reason?.message ?? String(reason)}`],
         };
-        renderCard(fallback);
+        renderCard(fallback); updateProgress(++done, CHECKS.length);
         return fallback;
       },
     );

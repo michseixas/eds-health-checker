@@ -29,13 +29,13 @@ export function render(results, url) {
 }
 
 /**
- * Pre-render N skeleton cards, each tagged with its check id so renderCard()
+ * Pre-render named skeleton cards, each tagged with its check id so renderCard()
  * can swap them in as checks resolve.
- * @param {string[]} checkIds  Ordered list of check ids (matches CHECKS in main.js)
+ * @param {{id:string, label:string}[]} checks  Ordered list of checks (matches CHECKS in main.js)
  */
-export function renderLoading(checkIds) {
+export function renderLoading(checks) {
   clear();
-  dashboard.appendChild(buildLoadingSummary());
+  dashboard.appendChild(buildLoadingSummary(checks.length));
 
   const seoWrapper = el('div');
   seoWrapper.id = 'seo-ai-panel';
@@ -43,12 +43,22 @@ export function renderLoading(checkIds) {
   dashboard.appendChild(seoWrapper);
 
   const grid = el('div', 'check-grid');
-  for (const id of checkIds) {
-    const card = buildLoadingCard();
+  for (const { id, label } of checks) {
+    const card = buildLoadingCard(label);
     card.dataset.checkId = id;
     grid.appendChild(card);
   }
   dashboard.appendChild(grid);
+}
+
+/**
+ * Increment the live "X / N complete" counter shown during loading.
+ * @param {number} done   Checks resolved so far.
+ * @param {number} total  Total check count.
+ */
+export function updateProgress(done, total) {
+  const counter = document.getElementById('checks-progress');
+  if (counter) counter.textContent = `Running checks… ${done} / ${total}`;
 }
 
 /**
@@ -132,11 +142,15 @@ function buildSummary(results, url) {
   return section;
 }
 
-function buildLoadingSummary() {
+function buildLoadingSummary(total) {
   const section = el('div', 'score-summary score-summary--loading');
   section.appendChild(skeleton('score-summary__url skeleton'));
   const meta = el('div', 'score-summary__meta');
   meta.appendChild(skeleton('score-summary__badge skeleton'));
+  const progress = el('span', 'score-summary__progress');
+  progress.id = 'checks-progress';
+  progress.textContent = `Running checks… 0 / ${total}`;
+  meta.appendChild(progress);
   section.appendChild(meta);
   return section;
 }
@@ -214,10 +228,13 @@ function buildCard(result) {
   return card;
 }
 
-function buildLoadingCard() {
+function buildLoadingCard(label = '') {
   const card = el('div', 'check-card check-card--loading');
   const header = el('div', 'check-card__header');
-  header.appendChild(skeleton('skeleton--line'));
+  header.appendChild(skeleton('skeleton--icon'));
+  const labelEl = el('h2', 'check-card__label');
+  labelEl.textContent = label;
+  header.appendChild(labelEl);
   header.appendChild(skeleton('skeleton--line skeleton--short'));
   card.appendChild(header);
   return card;
