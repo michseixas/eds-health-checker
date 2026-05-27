@@ -282,6 +282,9 @@ function handleCategoryFilter(ids) {
   grid.querySelectorAll('.check-card[data-check-id]').forEach((card) => {
     card.classList.toggle('check-card--cat-hidden', !idSet.has(card.dataset.checkId));
   });
+
+  grid.querySelector('.check-card:not(.check-card--cat-hidden)')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function clearCategoryFilter() {
