@@ -78,7 +78,7 @@ index.html                          # Entry point — URL form + #dashboard moun
 styles/
   main.css                          # Global styles, CSS custom properties, @media print
 scripts/
-  main.js                           # Orchestrator: runs all checks, progressive render
+  main.js                           # Orchestrator: runs all checks, progressive render; URL history (localStorage, datalist)
   lib/
     fetch.js                        # Shared helpers: fetchAndParse, fetchRaw, truncate, addCapped
   checks/
@@ -101,8 +101,9 @@ scripts/
     viewport.js                     # Viewport meta tag
     lang.js                         # HTML lang attribute (WCAG 3.1.1)
   report/
-    dashboard.js                    # Renders check cards into #dashboard (progressive)
+    dashboard.js                    # Renders check cards into #dashboard (progressive); status-filter pills; Export PDF button
     pdf.js                          # PDF export via window.print()
+    seo-summary.js                  # SEO & AI Snapshot panel (above check grid); skeleton loading state
 server.js                           # Dev server: static files + /proxy + /redirect-check
 lib/
   jspdf.umd.min.js                  # Reserved for future jsPDF integration
