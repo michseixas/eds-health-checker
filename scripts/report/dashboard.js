@@ -6,6 +6,7 @@
  */
 
 import { exportPdf } from './pdf.js';
+import { buildSeoLoading, buildSeoPanel } from './seo-summary.js';
 
 const STATUS_ICON  = { pass: '✓', warn: '⚠', fail: '✕' };
 const STATUS_LABEL = { pass: 'Pass', warn: 'Warn', fail: 'Fail' };
@@ -35,6 +36,12 @@ export function render(results, url) {
 export function renderLoading(checkIds) {
   clear();
   dashboard.appendChild(buildLoadingSummary());
+
+  const seoWrapper = el('div');
+  seoWrapper.id = 'seo-ai-panel';
+  seoWrapper.appendChild(buildSeoLoading());
+  dashboard.appendChild(seoWrapper);
+
   const grid = el('div', 'check-grid');
   for (const id of checkIds) {
     const card = buildLoadingCard();
@@ -62,6 +69,9 @@ export function renderCard(result) {
 export function renderSummary(results, url) {
   const existing = dashboard.querySelector('.score-summary');
   if (existing) existing.replaceWith(buildSummary(results, url));
+
+  const seoWrapper = dashboard.querySelector('#seo-ai-panel');
+  if (seoWrapper) seoWrapper.replaceChildren(buildSeoPanel(results));
 }
 
 /**
