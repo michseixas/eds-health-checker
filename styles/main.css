@@ -439,7 +439,7 @@ button {
 }
 
 /* ==========================================================================
-   13. SEO & AI Snapshot panel
+   13. Site Health Overview panel
    ========================================================================== */
 
 .seo-ai-panel {
@@ -460,15 +460,47 @@ button {
   margin-bottom: var(--space-md);
 }
 
-.seo-ai-panel__grid {
-  display: flex;
-  gap: var(--space-xl);
-  align-items: flex-start;
+/* 4-column tile row */
+.seo-ai-panel__tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 }
 
-.seo-ai-panel__group {
-  flex: 1;
-  min-width: 0;
+.seo-ai-panel__tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: box-shadow 0.15s;
+}
+
+.seo-ai-panel__tile:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.seo-ai-panel__tile-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.seo-ai-panel__tile-count {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
+}
+
+/* Full-width AI / LLM Readiness strip */
+.seo-ai-panel__ai-row {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-md);
 }
 
 .seo-ai-panel__group-header {
@@ -561,15 +593,23 @@ button {
 }
 
 /* Skeleton sizes for loading state */
-.skeleton--seo-label { height: 1rem;   width: 55%; }
+.skeleton--seo-label  { height: 1rem;    width: 55%; }
 .skeleton--seo-badge  { height: 1.25rem; width: 6rem; }
-.skeleton--seo-icon   { height: 1rem;   width: 1.25rem; flex-shrink: 0; }
-.skeleton--seo-row    { height: 1rem;   flex: 1; }
+.skeleton--seo-icon   { height: 1rem;    width: 1.25rem; flex-shrink: 0; }
+.skeleton--seo-row    { height: 1rem;    flex: 1; }
+.skeleton--tile-badge { height: 1.25rem; width: 8rem; }
+.skeleton--tile-count { height: 0.875rem; width: 4rem; }
 
-/* Responsive: stack columns on narrow screens */
-@media (max-width: 600px) {
-  .seo-ai-panel__grid {
-    flex-direction: column;
+/* Responsive: 2 cols on tablet, 1 col on mobile */
+@media (max-width: 700px) {
+  .seo-ai-panel__tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 440px) {
+  .seo-ai-panel__tiles {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -636,9 +676,14 @@ button {
     box-shadow: none;
   }
 
-  .seo-ai-panel__grid {
-    flex-direction: column;
-    gap: var(--space-md);
+  .seo-ai-panel__tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .seo-ai-panel__tile {
+    box-shadow: none;
+    cursor: default;
+    pointer-events: none;
   }
 
   .seo-ai-panel__item-btn {

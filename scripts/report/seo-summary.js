@@ -1,24 +1,44 @@
 /**
  * report/seo-summary.js
  *
- * Renders the "SEO & AI Snapshot" panel above the check grid.
- * All DOM construction uses createElement + textContent — no innerHTML with dynamic data.
+ * Renders the "Site Health Overview" panel above the check grid.
+ * Four category tiles (Speed, SEO, Accessibility, EDS Quality) followed
+ * by a full-width AI / LLM Readiness strip.
  */
 
 import { truncate } from '../lib/fetch.js';
 
-const STATUS_ICON = { pass: '✓', warn: '⚠', fail: '✕' };
-const STATUS_RANK = { fail: 2, warn: 1, pass: 0 };
+const STATUS_ICON  = { pass: '✓', warn: '⚠', fail: '✕' };
+const STATUS_RANK  = { fail: 2, warn: 1, pass: 0 };
+const BADGE_TEXT   = { pass: 'All Good', warn: 'Needs Attention', fail: 'Issues Found' };
+
+const SPEED_GROUP = [
+  { id: 'performance',    label: 'Performance (CWV)' },
+  { id: 'lazy-loading',   label: 'Lazy Loading' },
+  { id: 'script-loading', label: 'Script Loading' },
+  { id: 'fonts',          label: 'Font Loading' },
+  { id: 'inline-styles',  label: 'Inline Styles' },
+];
 
 const SEO_GROUP = [
   { id: 'metadata',        label: 'Metadata' },
-  { id: 'headings',        label: 'Heading Structure' },
   { id: 'sitemap',         label: 'Sitemap' },
   { id: 'structured-data', label: 'Structured Data' },
-  { id: 'redirect',        label: 'URL & Redirects' },
-  { id: 'performance',     label: 'Performance (CWV)' },
-  { id: 'viewport',        label: 'Viewport' },
-  { id: 'lang',            label: 'Language' },
+  { id: 'headings',        label: 'Heading Structure' },
+];
+
+const A11Y_GROUP = [
+  { id: 'accessibility', label: 'Accessibility' },
+  { id: 'viewport',      label: 'Viewport' },
+  { id: 'lang',          label: 'Language' },
+  { id: 'links',         label: 'Link Health' },
+  { id: 'duplicate-ids', label: 'Duplicate IDs' },
+];
+
+const EDS_GROUP = [
+  { id: 'blocks',   label: 'Block Structure' },
+  { id: 'images',   label: 'Image Routing' },
+  { id: 'redirect', label: 'URL & Redirects' },
 ];
 
 const AI_GROUP = [
@@ -27,7 +47,12 @@ const AI_GROUP = [
   { id: 'metadata',        label: 'Open Graph Tags' },
 ];
 
-const GROUP_BADGE_TEXT = { pass: 'All Good', warn: 'Needs Attention', fail: 'Issues Found' };
+const TILE_CATEGORIES = [
+  { title: 'Speed',         group: SPEED_GROUP },
+  { title: 'SEO',           group: SEO_GROUP   },
+  { title: 'Accessibility', group: A11Y_GROUP  },
+  { title: 'EDS Quality',   group: EDS_GROUP   },
+];
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -35,11 +60,14 @@ const GROUP_BADGE_TEXT = { pass: 'All Good', warn: 'Needs Attention', fail: 'Iss
 
 export function buildSeoLoading() {
   const section = el('section', 'seo-ai-panel seo-ai-panel--loading');
+
   const heading = el('h2', 'seo-ai-panel__title');
-  heading.textContent = 'SEO & AI Snapshot';
-  const grid = el('div', 'seo-ai-panel__grid');
-  grid.append(buildSkeletonGroup(SEO_GROUP.length), buildSkeletonGroup(AI_GROUP.length));
-  section.append(heading, grid);
+  heading.textContent = 'Site Health Overview';
+
+  const tiles = el('div', 'seo-ai-panel__tiles');
+  for (let i = 0; i < 4; i++) tiles.appendChild(buildSkeletonTile());
+
+  section.append(heading, tiles, buildSkeletonAiRow(AI_GROUP.length));
   return section;
 }
 
@@ -48,13 +76,9 @@ export function buildSeoPanel(results) {
 
   const section = el('section', 'seo-ai-panel');
   const heading = el('h2', 'seo-ai-panel__title');
-  heading.textContent = 'SEO & AI Snapshot';
-  const grid = el('div', 'seo-ai-panel__grid');
-  grid.append(
-    buildGroup('SEO Signals',        SEO_GROUP, byId),
-    buildGroup('AI / LLM Readiness', AI_GROUP,  byId),
-  );
-  section.append(heading, grid);
+  heading.textContent = 'Site Health Overview';
+
+  section.append(heading, buildTileGrid(byId), buildAiRow(byId));
 
   section.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-scroll-to]');
@@ -67,24 +91,57 @@ export function buildSeoPanel(results) {
 }
 
 // ---------------------------------------------------------------------------
-// Group builder
+// Tile grid
 // ---------------------------------------------------------------------------
 
-function buildGroup(title, group, byId) {
-  const wrap = el('div', 'seo-ai-panel__group');
+function buildTileGrid(byId) {
+  const grid = el('div', 'seo-ai-panel__tiles');
+  for (const { title, group } of TILE_CATEGORIES) {
+    grid.appendChild(buildTile(title, group, byId));
+  }
+  return grid;
+}
+
+function buildTile(title, group, byId) {
+  const status = worstStatus(group, byId);
+  const { passing, total } = countPassing(group, byId);
+  const target = firstScrollTarget(group, byId);
+
+  const tile = el('button', 'seo-ai-panel__tile');
+  tile.dataset.scrollTo = target;
+
+  const name = el('span', 'seo-ai-panel__tile-name');
+  name.textContent = title;
+
+  const badge = el('span', `seo-ai-panel__group-badge status-${status}`);
+  badge.textContent = BADGE_TEXT[status];
+
+  const count = el('span', 'seo-ai-panel__tile-count');
+  count.textContent = `${passing}/${total} pass`;
+
+  tile.append(name, badge, count);
+  return tile;
+}
+
+// ---------------------------------------------------------------------------
+// AI / LLM Readiness row
+// ---------------------------------------------------------------------------
+
+function buildAiRow(byId) {
+  const wrap = el('div', 'seo-ai-panel__ai-row');
 
   const header = el('div', 'seo-ai-panel__group-header');
   const lbl = el('span', 'seo-ai-panel__group-label');
-  lbl.textContent = title;
-  const aggStatus = worstStatus(group, byId);
+  lbl.textContent = 'AI / LLM Readiness';
+  const aggStatus = worstStatus(AI_GROUP, byId);
   const badge = el('span', `seo-ai-panel__group-badge status-${aggStatus}`);
-  badge.textContent = GROUP_BADGE_TEXT[aggStatus];
+  badge.textContent = BADGE_TEXT[aggStatus];
   header.append(lbl, badge);
   wrap.appendChild(header);
 
   const list = el('ul', 'seo-ai-panel__list');
-  for (const { id, label } of group) {
-    const r = byId[id];
+  for (const { id, label } of AI_GROUP) {
+    const r   = byId[id];
     const status = r?.status ?? 'pass';
 
     const item = el('li', 'seo-ai-panel__item');
@@ -94,8 +151,8 @@ function buildGroup(title, group, byId) {
     icon.textContent = STATUS_ICON[status];
 
     const body = el('div', 'seo-ai-panel__item-body');
-    const btn = el('button', 'seo-ai-panel__item-btn');
-    btn.textContent = label;
+    const btn  = el('button', 'seo-ai-panel__item-btn');
+    btn.textContent   = label;
     btn.dataset.scrollTo = id;
     body.appendChild(btn);
 
@@ -112,8 +169,18 @@ function buildGroup(title, group, byId) {
   return wrap;
 }
 
-function buildSkeletonGroup(rowCount) {
-  const wrap = el('div', 'seo-ai-panel__group');
+// ---------------------------------------------------------------------------
+// Skeleton loading states
+// ---------------------------------------------------------------------------
+
+function buildSkeletonTile() {
+  const tile = el('div', 'seo-ai-panel__tile seo-ai-panel__tile--skeleton');
+  tile.append(sk('skeleton--seo-label'), sk('skeleton--tile-badge'), sk('skeleton--tile-count'));
+  return tile;
+}
+
+function buildSkeletonAiRow(rowCount) {
+  const wrap = el('div', 'seo-ai-panel__ai-row');
   const header = el('div', 'seo-ai-panel__group-header');
   header.append(sk('skeleton--seo-label'), sk('skeleton--seo-badge'));
   wrap.appendChild(header);
@@ -136,6 +203,19 @@ function worstStatus(group, byId) {
     const s = byId[id]?.status ?? 'pass';
     return STATUS_RANK[s] > STATUS_RANK[worst] ? s : worst;
   }, 'pass');
+}
+
+function countPassing(group, byId) {
+  const passing = group.filter(({ id }) => (byId[id]?.status ?? 'pass') === 'pass').length;
+  return { passing, total: group.length };
+}
+
+function firstScrollTarget(group, byId) {
+  const target =
+    group.find(({ id }) => (byId[id]?.status ?? 'pass') === 'fail') ??
+    group.find(({ id }) => (byId[id]?.status ?? 'pass') === 'warn') ??
+    group[0];
+  return target.id;
 }
 
 function el(tag, className = '') {
