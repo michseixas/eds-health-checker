@@ -135,7 +135,7 @@ function buildSummary(results, url) {
   const btn = el('button', 'export-btn');
   btn.id = 'export-btn';
   btn.textContent = 'Export PDF';
-  btn.addEventListener('click', exportPdf);
+  btn.addEventListener('click', () => exportPdf(results, url));
   meta.appendChild(btn);
 
   section.appendChild(meta);

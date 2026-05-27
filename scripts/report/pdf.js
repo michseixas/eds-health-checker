@@ -1,66 +1,177 @@
 /**
  * report/pdf.js
  *
- * Exports the audit results as a PDF using the browser's native print dialog.
- * No external dependencies — layout is handled by @media print rules in main.css.
+ * Generates a downloadable PDF using jsPDF (window.jspdf global loaded from
+ * lib/jspdf.umd.min.js). Clicking "Export PDF" triggers an immediate download
+ * with no browser print dialog.
  *
- * Steps:
- *   1. Read the audited URL from the rendered summary bar.
- *   2. Set document.title so the browser uses it as the default PDF filename.
- *   3. Inject a .print-header element (hidden on screen, visible in print)
- *      containing the report title, URL, and timestamp.
- *   4. Call window.print().
- *   5. On the afterprint event, remove the injected header and restore the title.
+ * Layout: A4 portrait — cover header, summary stats, one row per check result.
  */
 
-export function exportPdf() {
-  const auditedUrl = document.querySelector('.score-summary__url')?.textContent?.trim() ?? '';
+// A4 dimensions in mm
+const PAGE_W  = 210;
+const PAGE_H  = 297;
+const MARGIN  = 15;
+const MAX_Y   = PAGE_H - 20;         // bottom margin
+const BODY_W  = PAGE_W - MARGIN * 2; // 180 mm usable width
+
+const COLOR = {
+  pass:    [26,  127, 55],
+  warn:    [154, 103, 0],
+  fail:    [207, 34,  46],
+  primary: [26,  26,  46],
+  muted:   [87,  96,  106],
+  rule:    [210, 210, 210],
+};
+
+const BADGE = { pass: 'PASS', warn: 'WARN', fail: 'FAIL' };
+
+// ---------------------------------------------------------------------------
+// Public
+// ---------------------------------------------------------------------------
+
+export function exportPdf(results, url) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
   const timestamp = new Date().toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+    dateStyle: 'medium', timeStyle: 'short',
   });
 
-  // Use the hostname as the PDF filename suggested by the browser
-  let hostname = 'eds-health-report';
-  try {
-    hostname = new URL(auditedUrl).hostname;
-  } catch {
-    // auditedUrl not parseable — fall through to default filename
-  }
+  let y = MARGIN;
+  y = drawHeader(doc, url, timestamp, y);
+  y = drawSummary(doc, results, y);
+  drawChecks(doc, results, y);
 
-  const originalTitle = document.title;
-  document.title = `EDS Health Report — ${hostname}`;
-
-  const header = buildPrintHeader(auditedUrl, timestamp);
-  document.getElementById('dashboard').prepend(header);
-
-  window.addEventListener('afterprint', () => {
-    header.remove();
-    document.title = originalTitle;
-  }, { once: true });
-
-  window.print();
+  doc.save(`eds-health-${safeHostname(url)}.pdf`);
 }
 
 // ---------------------------------------------------------------------------
+// Sections
+// ---------------------------------------------------------------------------
 
-function buildPrintHeader(url, timestamp) {
-  const header = document.createElement('div');
-  header.className = 'print-header';
+function drawHeader(doc, url, timestamp, y) {
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(...COLOR.primary);
+  doc.text('EDS Site Health Report', MARGIN, y);
+  y += 8;
 
-  const title = document.createElement('h1');
-  title.textContent = 'EDS Site Health Report';
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...COLOR.muted);
+  doc.text(url, MARGIN, y);
+  y += 5;
+  doc.text(`Generated: ${timestamp}`, MARGIN, y);
+  y += 6;
 
-  const urlLine = document.createElement('p');
-  urlLine.textContent = url;
+  return rule(doc, y);
+}
 
-  const timeLine = document.createElement('p');
-  timeLine.className = 'print-header__timestamp';
-  timeLine.textContent = `Generated: ${timestamp}`;
+function drawSummary(doc, results, y) {
+  const counts  = tally(results);
+  const overall = counts.fail > 0 ? 'fail' : counts.warn > 0 ? 'warn' : 'pass';
 
-  header.appendChild(title);
-  header.appendChild(urlLine);
-  header.appendChild(timeLine);
+  // Pass-rate line
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(...COLOR.primary);
+  doc.text(`${counts.pass} of ${results.length} checks passed`, MARGIN, y);
 
-  return header;
+  // Overall badge (right-aligned)
+  doc.setFontSize(9);
+  doc.setTextColor(...COLOR[overall]);
+  doc.text(`OVERALL: ${BADGE[overall]}`, MARGIN + BODY_W, y, { align: 'right' });
+  y += 6;
+
+  // Per-status breakdown
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...COLOR.muted);
+  doc.text(`Pass: ${counts.pass}   Warn: ${counts.warn}   Fail: ${counts.fail}`, MARGIN, y);
+  y += 6;
+
+  return rule(doc, y);
+}
+
+function drawChecks(doc, results, startY) {
+  // Section heading
+  let y = startY;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...COLOR.muted);
+  doc.text('CHECK RESULTS', MARGIN, y);
+  y += 6;
+
+  for (const result of results) {
+    y = drawCheck(doc, result, y);
+  }
+}
+
+function drawCheck(doc, result, y) {
+  const color  = COLOR[result.status];
+  const badge  = BADGE[result.status];
+  const indent = MARGIN + 5;
+  const wrapW  = BODY_W - 5;
+
+  // Page break if not enough space for at least the header row
+  if (y + 10 > MAX_Y) {
+    doc.addPage();
+    y = MARGIN;
+  }
+
+  // Check name (left) + status badge (right)
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(...COLOR.primary);
+  doc.text(result.label, MARGIN, y);
+
+  doc.setFontSize(8);
+  doc.setTextColor(...color);
+  doc.text(badge, MARGIN + BODY_W, y, { align: 'right' });
+  y += 5;
+
+  // Findings
+  if (result.findings.length > 0) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...COLOR.muted);
+
+    for (const finding of result.findings) {
+      if (y + 5 > MAX_Y) { doc.addPage(); y = MARGIN; }
+      const lines = doc.splitTextToSize(`• ${finding}`, wrapW);
+      doc.text(lines, indent, y);
+      y += lines.length * 4;
+    }
+  } else if (result.status === 'pass' && result.checks?.length) {
+    if (y + 5 > MAX_Y) { doc.addPage(); y = MARGIN; }
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...COLOR.muted);
+    doc.text(`${result.checks.length} criteria verified`, indent, y);
+    y += 4;
+  }
+
+  return y + 3; // gap between checks
+}
+
+// ---------------------------------------------------------------------------
+// Utilities
+// ---------------------------------------------------------------------------
+
+function rule(doc, y) {
+  doc.setDrawColor(...COLOR.rule);
+  doc.setLineWidth(0.3);
+  doc.line(MARGIN, y, MARGIN + BODY_W, y);
+  return y + 6;
+}
+
+function tally(results) {
+  const counts = { pass: 0, warn: 0, fail: 0 };
+  for (const r of results) counts[r.status] = (counts[r.status] ?? 0) + 1;
+  return counts;
+}
+
+function safeHostname(url) {
+  try { return new URL(url).hostname; } catch { return 'eds-health-report'; }
 }
