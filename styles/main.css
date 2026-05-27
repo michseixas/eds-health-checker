@@ -214,6 +214,28 @@ button {
   outline-offset: 1px;
 }
 
+.score-summary__badge--interactive {
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.score-summary__badge--interactive:hover {
+  filter: brightness(0.88);
+}
+
+.score-summary__reset {
+  font-size: 0.8125rem;
+  padding: var(--space-xs) var(--space-sm);
+  background: none;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.score-summary__reset:hover {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
 /* Filter: hide cards that don't match the active status */
 .check-grid[data-filter="pass"] .check-card:not(.check-card--pass) { display: none; }
 .check-grid[data-filter="warn"] .check-card:not(.check-card--warn) { display: none; }

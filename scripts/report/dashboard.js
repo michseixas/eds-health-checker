@@ -120,8 +120,10 @@ function buildSummary(results, url) {
   // Badge + per-status counts + export button
   const meta = el('div', 'score-summary__meta');
 
-  const badge = el('span', `score-summary__badge status-${overall}`);
+  const badge = el('span', `score-summary__badge score-summary__badge--interactive status-${overall}`);
   badge.textContent = `Overall: ${STATUS_LABEL[overall]}`;
+  badge.title = 'Click to reset filters';
+  badge.addEventListener('click', clearAllFilters);
   meta.appendChild(badge);
 
   for (const [status, count] of Object.entries(counts)) {
@@ -131,6 +133,13 @@ function buildSummary(results, url) {
     pill.addEventListener('click', () => toggleFilter(status, pill));
     meta.appendChild(pill);
   }
+
+  const resetBtn = el('button', 'score-summary__reset');
+  resetBtn.id = 'reset-filter-btn';
+  resetBtn.textContent = 'Reset Filter';
+  resetBtn.hidden = true;
+  resetBtn.addEventListener('click', clearAllFilters);
+  meta.appendChild(resetBtn);
 
   const btn = el('button', 'export-btn');
   btn.id = 'export-btn';
@@ -252,7 +261,6 @@ function toggleFilter(status, btn) {
 
   const isActive = btn.getAttribute('aria-pressed') === 'true';
 
-  // Reset all pills first
   dashboard.querySelectorAll('.score-summary__count').forEach((p) => {
     p.setAttribute('aria-pressed', 'false');
   });
@@ -263,18 +271,20 @@ function toggleFilter(status, btn) {
     btn.setAttribute('aria-pressed', 'true');
     grid.dataset.filter = status;
   }
+
+  syncResetButton();
 }
 
 function handleCategoryFilter(ids) {
   const grid = dashboard.querySelector('.check-grid');
   if (!grid) return;
 
-  // Clear any active status-pill filter
   dashboard.querySelectorAll('.score-summary__count').forEach((p) => p.setAttribute('aria-pressed', 'false'));
   delete grid.dataset.filter;
 
   if (!ids) {
     grid.querySelectorAll('.check-card--cat-hidden').forEach((c) => c.classList.remove('check-card--cat-hidden'));
+    syncResetButton();
     return;
   }
 
@@ -285,11 +295,30 @@ function handleCategoryFilter(ids) {
 
   grid.querySelector('.check-card:not(.check-card--cat-hidden)')
     ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  syncResetButton();
 }
 
 function clearCategoryFilter() {
   dashboard.querySelectorAll('.check-card--cat-hidden').forEach((c) => c.classList.remove('check-card--cat-hidden'));
   dashboard.querySelectorAll('[data-filter-ids][aria-pressed="true"]').forEach((t) => t.setAttribute('aria-pressed', 'false'));
+}
+
+function clearAllFilters() {
+  const grid = dashboard.querySelector('.check-grid');
+  if (grid) delete grid.dataset.filter;
+  clearCategoryFilter();
+  dashboard.querySelectorAll('.score-summary__count').forEach((p) => p.setAttribute('aria-pressed', 'false'));
+  syncResetButton();
+}
+
+function syncResetButton() {
+  const btn = document.getElementById('reset-filter-btn');
+  if (!btn) return;
+  const grid = dashboard.querySelector('.check-grid');
+  const statusActive = grid?.dataset.filter;
+  const catActive = dashboard.querySelector('[data-filter-ids][aria-pressed="true"]');
+  btn.hidden = !statusActive && !catActive;
 }
 
 // ---------------------------------------------------------------------------
