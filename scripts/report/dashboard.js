@@ -81,7 +81,7 @@ export function renderSummary(results, url) {
   if (existing) existing.replaceWith(buildSummary(results, url));
 
   const seoWrapper = dashboard.querySelector('#seo-ai-panel');
-  if (seoWrapper) seoWrapper.replaceChildren(buildSeoPanel(results));
+  if (seoWrapper) seoWrapper.replaceChildren(buildSeoPanel(results, handleCategoryFilter));
 }
 
 /**
@@ -248,6 +248,8 @@ function toggleFilter(status, btn) {
   const grid = dashboard.querySelector('.check-grid');
   if (!grid) return;
 
+  clearCategoryFilter();
+
   const isActive = btn.getAttribute('aria-pressed') === 'true';
 
   // Reset all pills first
@@ -261,6 +263,30 @@ function toggleFilter(status, btn) {
     btn.setAttribute('aria-pressed', 'true');
     grid.dataset.filter = status;
   }
+}
+
+function handleCategoryFilter(ids) {
+  const grid = dashboard.querySelector('.check-grid');
+  if (!grid) return;
+
+  // Clear any active status-pill filter
+  dashboard.querySelectorAll('.score-summary__count').forEach((p) => p.setAttribute('aria-pressed', 'false'));
+  delete grid.dataset.filter;
+
+  if (!ids) {
+    grid.querySelectorAll('.check-card--cat-hidden').forEach((c) => c.classList.remove('check-card--cat-hidden'));
+    return;
+  }
+
+  const idSet = new Set(ids);
+  grid.querySelectorAll('.check-card[data-check-id]').forEach((card) => {
+    card.classList.toggle('check-card--cat-hidden', !idSet.has(card.dataset.checkId));
+  });
+}
+
+function clearCategoryFilter() {
+  dashboard.querySelectorAll('.check-card--cat-hidden').forEach((c) => c.classList.remove('check-card--cat-hidden'));
+  dashboard.querySelectorAll('[data-filter-ids][aria-pressed="true"]').forEach((t) => t.setAttribute('aria-pressed', 'false'));
 }
 
 // ---------------------------------------------------------------------------

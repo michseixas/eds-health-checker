@@ -71,7 +71,7 @@ export function buildSeoLoading() {
   return section;
 }
 
-export function buildSeoPanel(results) {
+export function buildSeoPanel(results, onCategoryFilter) {
   const byId = Object.fromEntries(results.map((r) => [r.id, r]));
 
   const section = el('section', 'seo-ai-panel');
@@ -81,6 +81,14 @@ export function buildSeoPanel(results) {
   section.append(heading, buildTileGrid(byId), buildAiRow(byId));
 
   section.addEventListener('click', (e) => {
+    const tile = e.target.closest('[data-filter-ids]');
+    if (tile) {
+      const isActive = tile.getAttribute('aria-pressed') === 'true';
+      section.querySelectorAll('[data-filter-ids]').forEach((t) => t.setAttribute('aria-pressed', 'false'));
+      if (!isActive) tile.setAttribute('aria-pressed', 'true');
+      onCategoryFilter?.(isActive ? null : tile.dataset.filterIds.split(','));
+      return;
+    }
     const btn = e.target.closest('[data-scroll-to]');
     if (!btn) return;
     document.querySelector(`[data-check-id="${btn.dataset.scrollTo}"]`)
@@ -105,10 +113,10 @@ function buildTileGrid(byId) {
 function buildTile(title, group, byId) {
   const status = worstStatus(group, byId);
   const { passing, total } = countPassing(group, byId);
-  const target = firstScrollTarget(group, byId);
 
   const tile = el('button', 'seo-ai-panel__tile');
-  tile.dataset.scrollTo = target;
+  tile.dataset.filterIds = group.map((g) => g.id).join(',');
+  tile.setAttribute('aria-pressed', 'false');
 
   const name = el('span', 'seo-ai-panel__tile-name');
   name.textContent = title;

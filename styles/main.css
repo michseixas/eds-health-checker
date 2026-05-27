@@ -219,6 +219,9 @@ button {
 .check-grid[data-filter="warn"] .check-card:not(.check-card--warn) { display: none; }
 .check-grid[data-filter="fail"] .check-card:not(.check-card--fail) { display: none; }
 
+/* Filter: hide cards not in the active category */
+.check-card--cat-hidden { display: none; }
+
 /* ==========================================================================
    7. Status colour utilities (used on badges, counts, card borders)
    ========================================================================== */
@@ -488,6 +491,12 @@ button {
 }
 
 .seo-ai-panel__tile:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.seo-ai-panel__tile[aria-pressed="true"] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
   box-shadow: var(--shadow-card-hover);
 }
 
