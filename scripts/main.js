@@ -25,6 +25,7 @@ import { run as runAiReadiness   } from './checks/ai-readiness.js';
 import { run as runSitemap       } from './checks/sitemap.js';
 import { run as runViewport      } from './checks/viewport.js';
 import { run as runLang          } from './checks/lang.js';
+import { run as runWebMcp        } from './checks/webmcp.js';
 import { renderLoading, renderCard, renderSummary, renderError, updateProgress } from './report/dashboard.js';
 
 const CHECKS = [
@@ -46,6 +47,7 @@ const CHECKS = [
   { id: 'sitemap',         label: 'Sitemap',              run: runSitemap        },
   { id: 'viewport',        label: 'Viewport Meta',        run: runViewport       },
   { id: 'lang',            label: 'Language Attribute',   run: runLang           },
+  { id: 'webmcp',          label: 'WebMCP',               run: runWebMcp         },
 ];
 
 const LS_KEY         = 'eds-hc-psi-api-key';

@@ -35,7 +35,7 @@ When adding a new check:
 3. One check per commit/PR — this is the established practice
 4. Do NOT modify `main.js` for anything other than wiring in a new check
 
-## Current checks (18)
+## Current checks (19)
 
 | File | Label | What it audits |
 |---|---|---|
@@ -57,13 +57,14 @@ When adding a new check:
 | `sitemap.js` | Sitemap | /sitemap.xml reachability, valid XML, loc entries, URL in sitemap, robots Sitemap: directive |
 | `viewport.js` | Viewport Meta | `<meta name="viewport">` presence, width=device-width, initial-scale=1 |
 | `lang.js` | Language Attribute | `<html lang>` presence, non-empty, valid BCP 47 tag |
+| `webmcp.js` | WebMCP | WebMCP declarative tool registration — toolname + tooldescription on forms, toolparamdescription on inputs |
 
 ## Conventions
 - Vanilla JS only — no frameworks, no build step
 - ES module syntax (`import`/`export`) throughout
 - CSS custom properties for all colors/spacing — define tokens in `styles/main.css`,
   never hardcode values elsewhere
-- No external dependencies — PDF export uses `window.print()` with `@media print` CSS
+- PDF export uses jsPDF 2.5.1 (UMD bundle at `lib/jspdf.umd.min.js`, loaded as a non-module `<script>` tag, available as `window.jspdf`); generates a programmatic A4 download — no print dialog
 - All page fetches go through `/proxy?url=...` on the local dev server (bypasses CORS)
 - Domain-root files (robots.txt, llms.txt, sitemap.xml) are also fetched via `/proxy`
 - Shared fetch helpers live in `scripts/lib/fetch.js` — import from there, never redefine locally:
@@ -100,13 +101,14 @@ scripts/
     sitemap.js                      # sitemap.xml reachability and content
     viewport.js                     # Viewport meta tag
     lang.js                         # HTML lang attribute (WCAG 3.1.1)
+    webmcp.js                       # WebMCP declarative tool registration (Lighthouse Agentic Browsing)
   report/
-    dashboard.js                    # Renders check cards into #dashboard (progressive); status-filter pills; Export PDF button
-    pdf.js                          # PDF export via window.print()
-    seo-summary.js                  # SEO & AI Snapshot panel (above check grid); skeleton loading state
+    dashboard.js                    # Progressive card rendering; status-filter pills; category-filter via tile callbacks; Reset Filter button; Overall badge reset; Export PDF button
+    pdf.js                          # jsPDF programmatic A4 export — header, summary stats, per-check results with findings
+    seo-summary.js                  # "Site Health Overview" panel: 4 category tiles (Speed/SEO/Accessibility/EDS Quality) + AI/LLM Readiness strip; skeleton loading state; emits category filter callbacks on tile click
 server.js                           # Dev server: static files + /proxy + /redirect-check
 lib/
-  jspdf.umd.min.js                  # Reserved for future jsPDF integration
+  jspdf.umd.min.js                  # jsPDF 2.5.1 UMD bundle — loaded as non-module script, exposes window.jspdf
 .claude/
   settings.json                     # Claude Code project permissions
   commands/
@@ -118,4 +120,5 @@ lib/
 - `GET /proxy?url=<url>` — fetches target URL server-side, returns body with CORS headers
 - `GET /redirect-check?url=<url>` — follows redirects, returns `{ finalUrl, redirected, status }`
 - `GET /*` — static file server from project root
+
 

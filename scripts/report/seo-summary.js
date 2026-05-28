@@ -43,6 +43,7 @@ const EDS_GROUP = [
 
 const AI_GROUP = [
   { id: 'ai-readiness',    label: 'llms.txt & AI Crawlers' },
+  { id: 'webmcp',          label: 'WebMCP Agent Tools' },
   { id: 'structured-data', label: 'Structured Data (JSON-LD)' },
   { id: 'metadata',        label: 'Open Graph Tags' },
 ];
