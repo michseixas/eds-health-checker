@@ -24,7 +24,38 @@ const COLOR = {
   rule:    [210, 210, 210],
 };
 
-const BADGE = { pass: 'PASS', warn: 'WARN', fail: 'FAIL' };
+const BADGE      = { pass: 'PASS', warn: 'WARN', fail: 'FAIL' };
+const STATUS_RANK = { fail: 2, warn: 1, pass: 0 };
+const AI_ICON    = { pass: '✓', warn: '⚠', fail: '✕' };
+
+// Group definitions (mirrored from seo-summary.js)
+const SPEED_GROUP = [
+  { id: 'performance' }, { id: 'lazy-loading' }, { id: 'script-loading' },
+  { id: 'fonts' }, { id: 'inline-styles' },
+];
+const SEO_GROUP = [
+  { id: 'metadata' }, { id: 'sitemap' }, { id: 'structured-data' }, { id: 'headings' },
+];
+const A11Y_GROUP = [
+  { id: 'accessibility' }, { id: 'viewport' }, { id: 'lang' },
+  { id: 'links' }, { id: 'duplicate-ids' },
+];
+const EDS_GROUP = [
+  { id: 'blocks' }, { id: 'images' }, { id: 'redirect' },
+];
+const AI_GROUP = [
+  { id: 'ai-readiness',    label: 'llms.txt & AI Crawlers' },
+  { id: 'webmcp',          label: 'WebMCP Agent Tools' },
+  { id: 'structured-data', label: 'Structured Data (JSON-LD)' },
+  { id: 'metadata',        label: 'Open Graph Tags' },
+];
+const TILE_CATEGORIES = [
+  { title: 'Speed',         group: SPEED_GROUP },
+  { title: 'SEO',           group: SEO_GROUP   },
+  { title: 'Accessibility', group: A11Y_GROUP  },
+  { title: 'EDS Quality',   group: EDS_GROUP   },
+  { title: 'AI Readiness',  group: AI_GROUP    },
+];
 
 // ---------------------------------------------------------------------------
 // Public
@@ -41,6 +72,7 @@ export function exportPdf(results, url) {
   let y = MARGIN;
   y = drawHeader(doc, url, timestamp, y);
   y = drawSummary(doc, results, y);
+  y = drawOverview(doc, results, y);
   drawChecks(doc, results, y);
 
   doc.save(`eds-health-${safeHostname(url)}.pdf`);
@@ -90,6 +122,81 @@ function drawSummary(doc, results, y) {
   doc.setTextColor(...COLOR.muted);
   doc.text(`Pass: ${counts.pass}   Warn: ${counts.warn}   Fail: ${counts.fail}`, MARGIN, y);
   y += 6;
+
+  return rule(doc, y);
+}
+
+function drawOverview(doc, results, y) {
+  const byId = Object.fromEntries(results.map((r) => [r.id, r]));
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...COLOR.muted);
+  doc.text('SITE HEALTH OVERVIEW', MARGIN, y);
+  y += 6;
+
+  // One row per category tile
+  for (const { title, group } of TILE_CATEGORIES) {
+    if (y + 7 > MAX_Y) { doc.addPage(); y = MARGIN; }
+
+    const status = worstStatus(group, byId);
+    const { passing, total } = countPassing(group, byId);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COLOR.primary);
+    doc.text(title, MARGIN, y);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...COLOR[status]);
+    doc.text(BADGE[status], MARGIN + 60, y);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...COLOR.muted);
+    doc.text(`${passing}/${total} pass`, MARGIN + BODY_W, y, { align: 'right' });
+
+    y += 6;
+  }
+
+  y += 2;
+  y = rule(doc, y);
+
+  // AI / LLM Readiness detail strip
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...COLOR.muted);
+  doc.text('AI / LLM READINESS', MARGIN, y);
+  y += 6;
+
+  for (const { id, label } of AI_GROUP) {
+    if (y + 5 > MAX_Y) { doc.addPage(); y = MARGIN; }
+
+    const r      = byId[id];
+    const status = r?.status ?? 'pass';
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...COLOR[status]);
+    doc.text(AI_ICON[status], MARGIN, y);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COLOR.primary);
+    doc.text(label, MARGIN + 6, y);
+
+    if (status !== 'pass' && r?.findings?.length) {
+      const raw  = r.findings[0];
+      const hint = raw.length > 55 ? `${raw.slice(0, 52)}…` : raw;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...COLOR.muted);
+      doc.text(hint, MARGIN + BODY_W, y, { align: 'right' });
+    }
+
+    y += 5;
+  }
 
   return rule(doc, y);
 }
@@ -158,6 +265,18 @@ function drawCheck(doc, result, y) {
 // ---------------------------------------------------------------------------
 // Utilities
 // ---------------------------------------------------------------------------
+
+function worstStatus(group, byId) {
+  return group.reduce((worst, { id }) => {
+    const s = byId[id]?.status ?? 'pass';
+    return STATUS_RANK[s] > STATUS_RANK[worst] ? s : worst;
+  }, 'pass');
+}
+
+function countPassing(group, byId) {
+  const passing = group.filter(({ id }) => (byId[id]?.status ?? 'pass') === 'pass').length;
+  return { passing, total: group.length };
+}
 
 function rule(doc, y) {
   doc.setDrawColor(...COLOR.rule);
