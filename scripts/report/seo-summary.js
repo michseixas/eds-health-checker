@@ -53,6 +53,7 @@ const TILE_CATEGORIES = [
   { title: 'SEO',           group: SEO_GROUP   },
   { title: 'Accessibility', group: A11Y_GROUP  },
   { title: 'EDS Quality',   group: EDS_GROUP   },
+  { title: 'AI Readiness',  group: AI_GROUP    },
 ];
 
 // ---------------------------------------------------------------------------
@@ -66,7 +67,7 @@ export function buildSeoLoading() {
   heading.textContent = 'Site Health Overview';
 
   const tiles = el('div', 'seo-ai-panel__tiles');
-  for (let i = 0; i < 4; i++) tiles.appendChild(buildSkeletonTile());
+  for (let i = 0; i < 5; i++) tiles.appendChild(buildSkeletonTile());
 
   section.append(heading, tiles, buildSkeletonAiRow(AI_GROUP.length));
   return section;
