@@ -52,12 +52,28 @@ const CHECKS = [
 
 const LS_KEY         = 'eds-hc-psi-api-key';
 const LS_HISTORY_KEY = 'eds-hc-url-history';
+const LS_THEME_KEY   = 'eds-hc-theme';
 
 const form              = document.getElementById('check-form');
 const input             = document.getElementById('url-input');
 const apiKeyInput       = document.getElementById('api-key-input');
 const submitBtn         = document.getElementById('submit-btn');
+const themeBtn          = document.getElementById('theme-btn');
 const urlHistoryDatalist = document.getElementById('url-history');
+
+// Dark mode toggle
+function applyTheme(dark) {
+  document.documentElement.dataset.theme = dark ? 'dark' : '';
+  themeBtn.textContent = dark ? 'Light mode' : 'Dark mode';
+}
+
+themeBtn.addEventListener('click', () => {
+  const next = document.documentElement.dataset.theme !== 'dark';
+  localStorage.setItem(LS_THEME_KEY, next ? 'dark' : 'light');
+  applyTheme(next);
+});
+
+applyTheme(localStorage.getItem(LS_THEME_KEY) === 'dark');
 
 // Restore saved key and URL history on load
 apiKeyInput.value = localStorage.getItem(LS_KEY) ?? '';

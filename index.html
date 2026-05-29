@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EDS Site Health Checker</title>
   <link rel="stylesheet" href="styles/main.css">
+  <script>if (localStorage.getItem('eds-hc-theme') === 'dark') document.documentElement.dataset.theme = 'dark';</script>
 </head>
 <body>
   <header id="app-header">
@@ -29,6 +30,7 @@
       >
       <button id="submit-btn" type="submit">Run Checks</button>
     </form>
+    <button id="theme-btn" type="button">Dark mode</button>
   </header>
 
   <main id="dashboard"></main>
