@@ -1,25 +1,43 @@
 #!/usr/bin/env python3
-"""
-Stop hook: enhanced macOS notification with session duration + token usage.
-Reads the Claude Code hook JSON from stdin, parses the session transcript,
-and fires an osascript notification.
-"""
 import sys
 import json
 import subprocess
-from datetime import datetime
+from datetime import datetime, timezone
 
 data = json.load(sys.stdin)
 transcript_path = data.get("transcript_path", "")
+session_id = data.get("session_id", "unknown")
+state_file = f"/tmp/claude-stop-{session_id}"
 
-duration_str = "unknown"
-tokens_str = ""
+prev_stop = None
+try:
+    with open(state_file) as f:
+        prev_stop = f.read().strip()
+except FileNotFoundError:
+    pass
+
+now_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+try:
+    with open(state_file, "w") as f:
+        f.write(now_str)
+except Exception:
+    pass
+
+prev_dt = None
+if prev_stop:
+    try:
+        prev_dt = datetime.strptime(prev_stop, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except Exception:
+        pass
+
+duration_str = "–"
+total_output = 0
 
 if transcript_path:
     try:
         seen_uuids = set()
-        total_output = 0
         timestamps = []
+        fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
 
         with open(transcript_path) as f:
             for line in f:
@@ -31,7 +49,15 @@ if transcript_path:
                 except Exception:
                     continue
 
-                ts = entry.get("timestamp")
+                ts = entry.get("timestamp", "")
+
+                if prev_dt is not None:
+                    try:
+                        if datetime.strptime(ts, fmt) <= prev_dt:
+                            continue
+                    except Exception:
+                        pass
+
                 if ts:
                     timestamps.append(ts)
 
@@ -42,22 +68,17 @@ if transcript_path:
                     total_output += usage.get("output_tokens", 0)
 
         if timestamps:
-            fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
             start = datetime.strptime(min(timestamps), fmt)
             end = datetime.strptime(max(timestamps), fmt)
             secs = int((end - start).total_seconds())
             duration_str = f"{secs // 60}m {secs % 60}s" if secs >= 60 else f"{secs}s"
 
-        if total_output:
-            tokens_str = f"{total_output:,} tokens out"
-
     except Exception:
         pass
 
-subtitle = duration_str
-message = tokens_str or "Session complete"
+message = f"{total_output:,} tokens out" if total_output else "done"
 
 subprocess.run(
-    ["osascript", "-e", f'display notification "{message}" with title "Claude Code" subtitle "{subtitle}"'],
+    ["osascript", "-e", f'display notification "{message}" with title "Claude Code" subtitle "{duration_str}"'],
     capture_output=True,
 )
