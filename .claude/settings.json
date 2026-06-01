@@ -5,11 +5,35 @@
       "Bash(npm install*)",
       "Bash(npm run *)",
       "Bash(npm test*)",
-      "Bash(npm ci*)"
+      "Bash(npm ci*)",
+      "Bash(npx biome*)"
     ],
     "deny": []
   },
   "attribution": {
-  "commit": ""
-}
+    "commit": ""
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-write-lint.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude finished\" with title \"Claude Code\"' 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
 }
