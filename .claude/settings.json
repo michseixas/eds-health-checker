@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cat > /tmp/claude-stop-debug.json"
+             "command": "python3 .claude/hooks/stop-notify.py"
           }
         ]
       }
