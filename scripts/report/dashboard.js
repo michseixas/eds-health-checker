@@ -11,6 +11,10 @@ import { buildSeoLoading, buildSeoPanel } from './seo-summary.js';
 const STATUS_ICON = { pass: '✓', warn: '⚠', fail: '✕' };
 const STATUS_LABEL = { pass: 'Pass', warn: 'Warn', fail: 'Fail' };
 
+// Sparkline y positions: pass at top, fail at bottom
+const SPARK_Y = { pass: 3, warn: 8, fail: 13 };
+const SPARK_CLASS = { pass: 'spark-pass', warn: 'spark-warn', fail: 'spark-fail' };
+
 const dashboard = document.getElementById('dashboard');
 
 // ---------------------------------------------------------------------------
@@ -76,12 +80,32 @@ export function renderCard(result) {
  * @param {Array<{id:string, label:string, status:string, findings:string[]}>} results
  * @param {string} url
  */
-export function renderSummary(results, url) {
+export function renderSummary(results, url, runCount = 0) {
   const existing = dashboard.querySelector('.score-summary');
-  if (existing) existing.replaceWith(buildSummary(results, url));
+  if (existing) existing.replaceWith(buildSummary(results, url, runCount));
 
   const seoWrapper = dashboard.querySelector('#seo-ai-panel');
   if (seoWrapper) seoWrapper.replaceChildren(buildSeoPanel(results, handleCategoryFilter));
+}
+
+/**
+ * Inject sparkline SVGs into each check card header.
+ * Called once after all checks resolve and the run has been saved to history.
+ * @param {Array<{ts:number, checks:Record<string,string>}>} runs  Newest-first array from getHistory().
+ */
+export function renderSparklines(runs) {
+  const grid = dashboard.querySelector('.check-grid');
+  if (!grid || runs.length === 0) return;
+
+  grid.querySelectorAll('.check-card[data-check-id]').forEach((card) => {
+    const id = card.dataset.checkId;
+    const statuses = runs
+      .map((r) => r.checks[id])
+      .filter(Boolean)
+      .reverse(); // oldest → newest
+    if (statuses.length === 0) return;
+    card.querySelector('.check-card__header').appendChild(buildSparkline(statuses));
+  });
 }
 
 /**
@@ -100,7 +124,7 @@ export function renderError(message) {
 // Score summary
 // ---------------------------------------------------------------------------
 
-function buildSummary(results, url) {
+function buildSummary(results, url, runCount = 0) {
   const counts = tally(results);
   const overall = counts.fail > 0 ? 'fail' : counts.warn > 0 ? 'warn' : 'pass';
 
@@ -111,11 +135,20 @@ function buildSummary(results, url) {
   urlLine.textContent = url;
   section.appendChild(urlLine);
 
-  // Pass-rate headline
+  // Pass-rate headline + run count
   const total = results.length;
   const passRate = el('p', 'score-summary__pass-rate');
   passRate.textContent = `${counts.pass} of ${total} checks passed`;
   section.appendChild(passRate);
+
+  if (runCount > 0) {
+    const runLine = el('p', 'score-summary__run-count');
+    runLine.textContent =
+      runCount === 1
+        ? '1 run recorded — run again to see trend sparklines per check'
+        : `${runCount} runs recorded — sparklines visible in each check card`;
+    section.appendChild(runLine);
+  }
 
   // Badge + per-status counts + export button
   const meta = el('div', 'score-summary__meta');
@@ -146,7 +179,9 @@ function buildSummary(results, url) {
   copyBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
       copyBtn.textContent = 'Copied!';
-      setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 2000);
+      setTimeout(() => {
+        copyBtn.textContent = 'Copy link';
+      }, 2000);
     });
   });
   meta.appendChild(copyBtn);
@@ -365,4 +400,43 @@ function el(tag, className = '') {
 /** Create a div with skeleton class(es) for the loading state. */
 function skeleton(extraClass = '') {
   return el('div', `skeleton ${extraClass}`.trim());
+}
+
+/**
+ * Build a small SVG sparkline for a check's run history.
+ * @param {string[]} statuses  Ordered oldest→newest, length ≥ 2.
+ */
+function buildSparkline(statuses) {
+  const STEP = 10;
+  const H = 16;
+  const W = statuses.length * STEP;
+  const NS = 'http://www.w3.org/2000/svg';
+
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'check-card__sparkline');
+
+  const titleEl = document.createElementNS(NS, 'title');
+  titleEl.textContent = `Last ${statuses.length} runs: ${statuses.join(', ')}`;
+  svg.appendChild(titleEl);
+
+  const points = statuses.map((s, i) => `${STEP / 2 + i * STEP},${SPARK_Y[s] ?? 8}`).join(' ');
+  const line = document.createElementNS(NS, 'polyline');
+  line.setAttribute('points', points);
+  line.setAttribute('class', 'spark-line');
+  svg.appendChild(line);
+
+  for (let i = 0; i < statuses.length; i++) {
+    const circle = document.createElementNS(NS, 'circle');
+    circle.setAttribute('cx', STEP / 2 + i * STEP);
+    circle.setAttribute('cy', SPARK_Y[statuses[i]] ?? 8);
+    circle.setAttribute('r', i === statuses.length - 1 ? 4 : 2.5);
+    circle.setAttribute('class', SPARK_CLASS[statuses[i]] ?? '');
+    svg.appendChild(circle);
+  }
+
+  return svg;
 }

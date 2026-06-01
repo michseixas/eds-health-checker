@@ -26,7 +26,15 @@ import { run as runSitemap } from './checks/sitemap.js';
 import { run as runStructuredData } from './checks/structured-data.js';
 import { run as runViewport } from './checks/viewport.js';
 import { run as runWebMcp } from './checks/webmcp.js';
-import { renderCard, renderError, renderLoading, renderSummary, updateProgress } from './report/dashboard.js';
+import { getHistory, saveRun } from './lib/history.js';
+import {
+  renderCard,
+  renderError,
+  renderLoading,
+  renderSparklines,
+  renderSummary,
+  updateProgress,
+} from './report/dashboard.js';
 
 const CHECKS = [
   { id: 'performance', label: 'Performance', run: runPerformance },
@@ -50,6 +58,10 @@ const CHECKS = [
   { id: 'webmcp', label: 'WebMCP', run: runWebMcp },
 ];
 
+// Static SVG lightbulb icons — lit when light mode is active, off in dark mode
+const BULB_LIT = `<svg width="11" height="13" viewBox="0 0 11 13" aria-hidden="true" focusable="false" style="vertical-align:-2px;margin-right:4px"><circle cx="5.5" cy="5" r="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/><rect x="3.5" y="8.5" width="4" height="0.7" rx="0.35" fill="#9ca3af"/><rect x="3.8" y="9.4" width="3.4" height="0.7" rx="0.35" fill="#9ca3af"/><rect x="4.1" y="10.3" width="2.8" height="0.7" rx="0.35" fill="#9ca3af"/></svg>`;
+const BULB_OFF = `<svg width="11" height="13" viewBox="0 0 11 13" aria-hidden="true" focusable="false" style="vertical-align:-2px;margin-right:4px"><circle cx="5.5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3.5" y="8.5" width="4" height="0.7" rx="0.35" fill="currentColor" opacity="0.5"/><rect x="3.8" y="9.4" width="3.4" height="0.7" rx="0.35" fill="currentColor" opacity="0.5"/><rect x="4.1" y="10.3" width="2.8" height="0.7" rx="0.35" fill="currentColor" opacity="0.5"/></svg>`;
+
 const LS_KEY = 'eds-hc-psi-api-key';
 const LS_HISTORY_KEY = 'eds-hc-url-history';
 const LS_THEME_KEY = 'eds-hc-theme';
@@ -64,7 +76,7 @@ const urlHistoryDatalist = document.getElementById('url-history');
 // Dark mode toggle
 function applyTheme(dark) {
   document.documentElement.dataset.theme = dark ? 'dark' : '';
-  themeBtn.textContent = dark ? 'Light mode' : 'Dark mode';
+  themeBtn.innerHTML = dark ? `${BULB_OFF}Light mode` : `${BULB_LIT}Dark mode`;
 }
 
 themeBtn.addEventListener('click', () => {
@@ -140,11 +152,16 @@ form.addEventListener('submit', async (e) => {
   });
 
   const results = await Promise.all(promises);
-  renderSummary(results, url);
-  history.pushState(null, '', `?url=${encodeURIComponent(url)}`);
-
-  submitBtn.disabled = false;
-  submitBtn.textContent = 'Run Checks';
+  try {
+    saveRun(url, results);
+    const runs = getHistory(url);
+    renderSummary(results, url, runs.length);
+    renderSparklines(runs);
+    history.pushState(null, '', `?url=${encodeURIComponent(url)}`);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Run Checks';
+  }
 });
 
 // Auto-run if the page was opened with ?url= (e.g. from a bookmark)

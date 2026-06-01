@@ -234,6 +234,11 @@ button {
   color: var(--color-text-primary);
 }
 
+.score-summary__run-count {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
 .score-summary__meta {
   display: flex;
   align-items: center;
@@ -409,7 +414,33 @@ button {
 }
 
 /* ==========================================================================
-   10. Findings (collapsible <details>)
+   10. Sparkline (run history trend)
+   ========================================================================== */
+
+.check-card__sparkline {
+  flex-shrink: 0;
+  display: block;
+  overflow: visible;
+}
+
+.spark-line {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 1px;
+}
+
+.spark-pass {
+  fill: var(--color-pass);
+}
+.spark-warn {
+  fill: var(--color-warn);
+}
+.spark-fail {
+  fill: var(--color-fail);
+}
+
+/* ==========================================================================
+   11. Findings (collapsible <details>)
    ========================================================================== */
 
 .check-card__findings {
@@ -517,7 +548,7 @@ button {
 }
 
 /* ==========================================================================
-   11. Loading skeleton
+   12. Loading skeleton
    ========================================================================== */
 
 @keyframes shimmer {
@@ -562,7 +593,7 @@ button {
 }
 
 /* ==========================================================================
-   12. Error message
+   13. Error message
    ========================================================================== */
 
 .error-message {
@@ -576,7 +607,7 @@ button {
 }
 
 /* ==========================================================================
-   13. Site Health Overview panel
+   14. Site Health Overview panel
    ========================================================================== */
 
 .seo-ai-panel {
@@ -796,7 +827,7 @@ button {
 }
 
 /* ==========================================================================
-   14. Print / PDF
+   15. Print / PDF
    ========================================================================== */
 
 /* Hidden on screen — only rendered when window.print() is called */
