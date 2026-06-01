@@ -6,7 +6,8 @@
  * suspicious href values, and links with no accessible label.
  */
 
-import { fetchAndParse, truncate, addCapped } from '../lib/fetch.js';
+import { addCapped, fetchAndParse, truncate } from '../lib/fetch.js';
+
 /** Same-origin links sampled for live 404/5xx probing */
 const MAX_PROBE = 10;
 
@@ -136,5 +137,3 @@ const CHECKS = [
 function result(status, findings) {
   return { id: 'links', label: 'Link Health', status, findings, checks: CHECKS };
 }
-
-

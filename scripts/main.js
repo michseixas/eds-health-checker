@@ -7,58 +7,58 @@
  * @typedef {{ id: string, label: string, status: 'pass'|'warn'|'fail', findings: string[] }} CheckResult
  */
 
-import { run as runPerformance } from './checks/performance.js';
-import { run as runMetadata } from './checks/metadata.js';
-import { run as runBlocks } from './checks/blocks.js';
-import { run as runImages } from './checks/images.js';
-import { run as runRedirect } from './checks/redirect.js';
-import { run as runHeadings } from './checks/headings.js';
-import { run as runLinks   } from './checks/links.js';
-import { run as runFonts        } from './checks/fonts.js';
-import { run as runInlineStyles  } from './checks/inline-styles.js';
 import { run as runAccessibility } from './checks/accessibility.js';
-import { run as runLazyLoading   } from './checks/lazy-loading.js';
+import { run as runAiReadiness } from './checks/ai-readiness.js';
+import { run as runBlocks } from './checks/blocks.js';
+import { run as runDuplicateIds } from './checks/duplicate-ids.js';
+import { run as runFonts } from './checks/fonts.js';
+import { run as runHeadings } from './checks/headings.js';
+import { run as runImages } from './checks/images.js';
+import { run as runInlineStyles } from './checks/inline-styles.js';
+import { run as runLang } from './checks/lang.js';
+import { run as runLazyLoading } from './checks/lazy-loading.js';
+import { run as runLinks } from './checks/links.js';
+import { run as runMetadata } from './checks/metadata.js';
+import { run as runPerformance } from './checks/performance.js';
+import { run as runRedirect } from './checks/redirect.js';
 import { run as runScriptLoading } from './checks/script-loading.js';
-import { run as runDuplicateIds   } from './checks/duplicate-ids.js';
+import { run as runSitemap } from './checks/sitemap.js';
 import { run as runStructuredData } from './checks/structured-data.js';
-import { run as runAiReadiness   } from './checks/ai-readiness.js';
-import { run as runSitemap       } from './checks/sitemap.js';
-import { run as runViewport      } from './checks/viewport.js';
-import { run as runLang          } from './checks/lang.js';
-import { run as runWebMcp        } from './checks/webmcp.js';
-import { renderLoading, renderCard, renderSummary, renderError, updateProgress } from './report/dashboard.js';
+import { run as runViewport } from './checks/viewport.js';
+import { run as runWebMcp } from './checks/webmcp.js';
+import { renderCard, renderError, renderLoading, renderSummary, updateProgress } from './report/dashboard.js';
 
 const CHECKS = [
-  { id: 'performance', label: 'Performance',        run: runPerformance },
-  { id: 'metadata',    label: 'Metadata',            run: runMetadata    },
-  { id: 'blocks',      label: 'Block Structure',     run: runBlocks      },
-  { id: 'images',      label: 'Image Routing',       run: runImages      },
-  { id: 'redirect',    label: 'Redirect Check',      run: runRedirect    },
-  { id: 'headings',    label: 'Heading Hierarchy',   run: runHeadings    },
-  { id: 'links',       label: 'Link Health',          run: runLinks       },
-  { id: 'fonts',         label: 'Font Loading',         run: runFonts        },
-  { id: 'inline-styles',  label: 'Inline Styles',        run: runInlineStyles  },
-  { id: 'accessibility',  label: 'Accessibility',        run: runAccessibility },
-  { id: 'lazy-loading',   label: 'Lazy Loading',         run: runLazyLoading   },
-  { id: 'script-loading', label: 'Script Loading',       run: runScriptLoading },
-  { id: 'duplicate-ids',   label: 'Duplicate IDs',        run: runDuplicateIds   },
-  { id: 'structured-data', label: 'Structured Data',      run: runStructuredData },
-  { id: 'ai-readiness',    label: 'AI Readiness',         run: runAiReadiness    },
-  { id: 'sitemap',         label: 'Sitemap',              run: runSitemap        },
-  { id: 'viewport',        label: 'Viewport Meta',        run: runViewport       },
-  { id: 'lang',            label: 'Language Attribute',   run: runLang           },
-  { id: 'webmcp',          label: 'WebMCP',               run: runWebMcp         },
+  { id: 'performance', label: 'Performance', run: runPerformance },
+  { id: 'metadata', label: 'Metadata', run: runMetadata },
+  { id: 'blocks', label: 'Block Structure', run: runBlocks },
+  { id: 'images', label: 'Image Routing', run: runImages },
+  { id: 'redirect', label: 'Redirect Check', run: runRedirect },
+  { id: 'headings', label: 'Heading Hierarchy', run: runHeadings },
+  { id: 'links', label: 'Link Health', run: runLinks },
+  { id: 'fonts', label: 'Font Loading', run: runFonts },
+  { id: 'inline-styles', label: 'Inline Styles', run: runInlineStyles },
+  { id: 'accessibility', label: 'Accessibility', run: runAccessibility },
+  { id: 'lazy-loading', label: 'Lazy Loading', run: runLazyLoading },
+  { id: 'script-loading', label: 'Script Loading', run: runScriptLoading },
+  { id: 'duplicate-ids', label: 'Duplicate IDs', run: runDuplicateIds },
+  { id: 'structured-data', label: 'Structured Data', run: runStructuredData },
+  { id: 'ai-readiness', label: 'AI Readiness', run: runAiReadiness },
+  { id: 'sitemap', label: 'Sitemap', run: runSitemap },
+  { id: 'viewport', label: 'Viewport Meta', run: runViewport },
+  { id: 'lang', label: 'Language Attribute', run: runLang },
+  { id: 'webmcp', label: 'WebMCP', run: runWebMcp },
 ];
 
-const LS_KEY         = 'eds-hc-psi-api-key';
+const LS_KEY = 'eds-hc-psi-api-key';
 const LS_HISTORY_KEY = 'eds-hc-url-history';
-const LS_THEME_KEY   = 'eds-hc-theme';
+const LS_THEME_KEY = 'eds-hc-theme';
 
-const form              = document.getElementById('check-form');
-const input             = document.getElementById('url-input');
-const apiKeyInput       = document.getElementById('api-key-input');
-const submitBtn         = document.getElementById('submit-btn');
-const themeBtn          = document.getElementById('theme-btn');
+const form = document.getElementById('check-form');
+const input = document.getElementById('url-input');
+const apiKeyInput = document.getElementById('api-key-input');
+const submitBtn = document.getElementById('submit-btn');
+const themeBtn = document.getElementById('theme-btn');
 const urlHistoryDatalist = document.getElementById('url-history');
 
 // Dark mode toggle
@@ -120,13 +120,20 @@ form.addEventListener('submit', async (e) => {
   const promises = CHECKS.map(({ id, label, run }) => {
     const p = id === 'performance' ? run(url, apiKey) : run(url);
     return p.then(
-      (result) => { renderCard(result); updateProgress(++done, CHECKS.length); return result; },
+      (result) => {
+        renderCard(result);
+        updateProgress(++done, CHECKS.length);
+        return result;
+      },
       (reason) => {
         const fallback = {
-          id, label, status: 'fail',
+          id,
+          label,
+          status: 'fail',
           findings: [`Unexpected error: ${reason?.message ?? String(reason)}`],
         };
-        renderCard(fallback); updateProgress(++done, CHECKS.length);
+        renderCard(fallback);
+        updateProgress(++done, CHECKS.length);
         return fallback;
       },
     );

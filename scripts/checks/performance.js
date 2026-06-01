@@ -12,12 +12,12 @@ const PSI_ENDPOINT = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed
 
 /** CWV and key timing metrics to surface in findings */
 const METRICS = {
-  'largest-contentful-paint':  { label: 'LCP',  good: 2500,  poor: 4000,  unit: 'ms' },
-  'cumulative-layout-shift':   { label: 'CLS',  good: 0.1,   poor: 0.25,  unit: ''   },
-  'total-blocking-time':       { label: 'TBT',  good: 200,   poor: 600,   unit: 'ms' },
-  'first-contentful-paint':    { label: 'FCP',  good: 1800,  poor: 3000,  unit: 'ms' },
-  'interaction-to-next-paint': { label: 'INP',  good: 200,   poor: 500,   unit: 'ms' },
-  'speed-index':               { label: 'SI',   good: 3400,  poor: 5800,  unit: 'ms' },
+  'largest-contentful-paint': { label: 'LCP', good: 2500, poor: 4000, unit: 'ms' },
+  'cumulative-layout-shift': { label: 'CLS', good: 0.1, poor: 0.25, unit: '' },
+  'total-blocking-time': { label: 'TBT', good: 200, poor: 600, unit: 'ms' },
+  'first-contentful-paint': { label: 'FCP', good: 1800, poor: 3000, unit: 'ms' },
+  'interaction-to-next-paint': { label: 'INP', good: 200, poor: 500, unit: 'ms' },
+  'speed-index': { label: 'SI', good: 3400, poor: 5800, unit: 'ms' },
 };
 
 /**

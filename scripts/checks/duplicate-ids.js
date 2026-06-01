@@ -37,9 +37,7 @@ export async function run(url) {
     counts.set(id, (counts.get(id) ?? 0) + 1);
   }
 
-  const duplicates = [...counts.entries()]
-    .filter(([, count]) => count > 1)
-    .sort((a, b) => b[1] - a[1]);
+  const duplicates = [...counts.entries()].filter(([, count]) => count > 1).sort((a, b) => b[1] - a[1]);
 
   if (duplicates.length === 0) return result('pass', []);
 
@@ -59,9 +57,7 @@ export async function run(url) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const CHECKS = [
-  'All id attributes are unique within the document',
-];
+const CHECKS = ['All id attributes are unique within the document'];
 
 function result(status, findings) {
   return { id: 'duplicate-ids', label: 'Duplicate IDs', status, findings, checks: CHECKS };

@@ -8,23 +8,23 @@
  * Usage: node server.js
  */
 
-import { createServer } from 'http';
-import { readFile } from 'fs/promises';
-import { extname, join } from 'path';
-import { fileURLToPath } from 'url';
+import { readFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { extname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const PORT = 3000;
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
-  '.js':   'text/javascript',
-  '.css':  'text/css',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
   '.json': 'application/json',
-  '.png':  'image/png',
-  '.jpg':  'image/jpeg',
-  '.svg':  'image/svg+xml',
-  '.ico':  'image/x-icon',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
 };
 
 createServer(async (req, res) => {
@@ -56,13 +56,17 @@ createServer(async (req, res) => {
   // ── Redirect check ──────────────────────────────────────────────────────────
   if (reqUrl.pathname === '/redirect-check') {
     const target = reqUrl.searchParams.get('url');
-    if (!target) { res.writeHead(400); return res.end('Missing url parameter'); }
+    if (!target) {
+      res.writeHead(400);
+      return res.end('Missing url parameter');
+    }
     try {
       const r = await fetch(target, { redirect: 'follow', headers: { 'User-Agent': 'EDS-Health-Checker/1.0' } });
       res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
       return res.end(JSON.stringify({ finalUrl: r.url, redirected: r.redirected, status: r.status }));
     } catch (err) {
-      res.writeHead(502); return res.end(err.message);
+      res.writeHead(502);
+      return res.end(err.message);
     }
   }
 

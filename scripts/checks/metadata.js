@@ -18,9 +18,6 @@
 
 import { fetchAndParse } from '../lib/fetch.js';
 
-/** Fields that must be present — absence → fail */
-const REQUIRED = ['title', 'description'];
-
 const RULES = {
   title: {
     label: 'Page title',

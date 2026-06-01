@@ -36,17 +36,13 @@ export async function run(url) {
     return result('pass', []);
   }
 
-  const fullyAnnotated = forms.filter(
-    (f) => f.hasAttribute('toolname') && f.hasAttribute('tooldescription'),
-  );
+  const fullyAnnotated = forms.filter((f) => f.hasAttribute('toolname') && f.hasAttribute('tooldescription'));
   const broken = forms.filter(
     (f) =>
       (f.hasAttribute('toolname') && !f.hasAttribute('tooldescription')) ||
       (!f.hasAttribute('toolname') && f.hasAttribute('tooldescription')),
   );
-  const unannotated = forms.filter(
-    (f) => !f.hasAttribute('toolname') && !f.hasAttribute('tooldescription'),
-  );
+  const unannotated = forms.filter((f) => !f.hasAttribute('toolname') && !f.hasAttribute('tooldescription'));
 
   // 1. Broken registrations — tool will silently fail to register
   for (const form of broken) {
@@ -65,9 +61,7 @@ export async function run(url) {
         `${forms.length} form${forms.length !== 1 ? 's' : ''} found but none annotated with WebMCP — add toolname + tooldescription to expose them as agent tools`,
       );
     } else {
-      findings.push(
-        `${unannotated.length} of ${forms.length} forms lack WebMCP annotations`,
-      );
+      findings.push(`${unannotated.length} of ${forms.length} forms lack WebMCP annotations`);
     }
   }
 

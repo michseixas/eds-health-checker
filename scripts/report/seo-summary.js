@@ -8,52 +8,52 @@
 
 import { truncate } from '../lib/fetch.js';
 
-const STATUS_ICON  = { pass: '✓', warn: '⚠', fail: '✕' };
-const STATUS_RANK  = { fail: 2, warn: 1, pass: 0 };
-const BADGE_TEXT   = { pass: 'All Good', warn: 'Needs Attention', fail: 'Issues Found' };
+const STATUS_ICON = { pass: '✓', warn: '⚠', fail: '✕' };
+const STATUS_RANK = { fail: 2, warn: 1, pass: 0 };
+const BADGE_TEXT = { pass: 'All Good', warn: 'Needs Attention', fail: 'Issues Found' };
 
 const SPEED_GROUP = [
-  { id: 'performance',    label: 'Performance (CWV)' },
-  { id: 'lazy-loading',   label: 'Lazy Loading' },
+  { id: 'performance', label: 'Performance (CWV)' },
+  { id: 'lazy-loading', label: 'Lazy Loading' },
   { id: 'script-loading', label: 'Script Loading' },
-  { id: 'fonts',          label: 'Font Loading' },
-  { id: 'inline-styles',  label: 'Inline Styles' },
+  { id: 'fonts', label: 'Font Loading' },
+  { id: 'inline-styles', label: 'Inline Styles' },
 ];
 
 const SEO_GROUP = [
-  { id: 'metadata',        label: 'Metadata' },
-  { id: 'sitemap',         label: 'Sitemap' },
+  { id: 'metadata', label: 'Metadata' },
+  { id: 'sitemap', label: 'Sitemap' },
   { id: 'structured-data', label: 'Structured Data' },
-  { id: 'headings',        label: 'Heading Structure' },
+  { id: 'headings', label: 'Heading Structure' },
 ];
 
 const A11Y_GROUP = [
   { id: 'accessibility', label: 'Accessibility' },
-  { id: 'viewport',      label: 'Viewport' },
-  { id: 'lang',          label: 'Language' },
-  { id: 'links',         label: 'Link Health' },
+  { id: 'viewport', label: 'Viewport' },
+  { id: 'lang', label: 'Language' },
+  { id: 'links', label: 'Link Health' },
   { id: 'duplicate-ids', label: 'Duplicate IDs' },
 ];
 
 const EDS_GROUP = [
-  { id: 'blocks',   label: 'Block Structure' },
-  { id: 'images',   label: 'Image Routing' },
+  { id: 'blocks', label: 'Block Structure' },
+  { id: 'images', label: 'Image Routing' },
   { id: 'redirect', label: 'URL & Redirects' },
 ];
 
 const AI_GROUP = [
-  { id: 'ai-readiness',    label: 'llms.txt & AI Crawlers' },
-  { id: 'webmcp',          label: 'WebMCP Agent Tools' },
+  { id: 'ai-readiness', label: 'llms.txt & AI Crawlers' },
+  { id: 'webmcp', label: 'WebMCP Agent Tools' },
   { id: 'structured-data', label: 'Structured Data (JSON-LD)' },
-  { id: 'metadata',        label: 'Open Graph Tags' },
+  { id: 'metadata', label: 'Open Graph Tags' },
 ];
 
 const TILE_CATEGORIES = [
-  { title: 'Speed',         group: SPEED_GROUP },
-  { title: 'SEO',           group: SEO_GROUP   },
-  { title: 'Accessibility', group: A11Y_GROUP  },
-  { title: 'EDS Quality',   group: EDS_GROUP   },
-  { title: 'AI Readiness',  group: AI_GROUP    },
+  { title: 'Speed', group: SPEED_GROUP },
+  { title: 'SEO', group: SEO_GROUP },
+  { title: 'Accessibility', group: A11Y_GROUP },
+  { title: 'EDS Quality', group: EDS_GROUP },
+  { title: 'AI Readiness', group: AI_GROUP },
 ];
 
 // ---------------------------------------------------------------------------
@@ -86,14 +86,17 @@ export function buildSeoPanel(results, onCategoryFilter) {
     const tile = e.target.closest('[data-filter-ids]');
     if (tile) {
       const isActive = tile.getAttribute('aria-pressed') === 'true';
-      section.querySelectorAll('[data-filter-ids]').forEach((t) => t.setAttribute('aria-pressed', 'false'));
+      section.querySelectorAll('[data-filter-ids]').forEach((t) => {
+        t.setAttribute('aria-pressed', 'false');
+      });
       if (!isActive) tile.setAttribute('aria-pressed', 'true');
       onCategoryFilter?.(isActive ? null : tile.dataset.filterIds.split(','));
       return;
     }
     const btn = e.target.closest('[data-scroll-to]');
     if (!btn) return;
-    document.querySelector(`[data-check-id="${btn.dataset.scrollTo}"]`)
+    document
+      .querySelector(`[data-check-id="${btn.dataset.scrollTo}"]`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
@@ -151,7 +154,7 @@ function buildAiRow(byId) {
 
   const list = el('ul', 'seo-ai-panel__list');
   for (const { id, label } of AI_GROUP) {
-    const r   = byId[id];
+    const r = byId[id];
     const status = r?.status ?? 'pass';
 
     const item = el('li', 'seo-ai-panel__item');
@@ -161,8 +164,8 @@ function buildAiRow(byId) {
     icon.textContent = STATUS_ICON[status];
 
     const body = el('div', 'seo-ai-panel__item-body');
-    const btn  = el('button', 'seo-ai-panel__item-btn');
-    btn.textContent   = label;
+    const btn = el('button', 'seo-ai-panel__item-btn');
+    btn.textContent = label;
     btn.dataset.scrollTo = id;
     body.appendChild(btn);
 
@@ -218,14 +221,6 @@ function worstStatus(group, byId) {
 function countPassing(group, byId) {
   const passing = group.filter(({ id }) => (byId[id]?.status ?? 'pass') === 'pass').length;
   return { passing, total: group.length };
-}
-
-function firstScrollTarget(group, byId) {
-  const target =
-    group.find(({ id }) => (byId[id]?.status ?? 'pass') === 'fail') ??
-    group.find(({ id }) => (byId[id]?.status ?? 'pass') === 'warn') ??
-    group[0];
-  return target.id;
 }
 
 function el(tag, className = '') {

@@ -65,9 +65,7 @@ export async function run(url) {
   for (const section of sections) {
     // Blocks are direct <div> children of a section that have at least one class.
     // Classless divs are raw content wrappers, not blocks.
-    const blocks = [...section.querySelectorAll(':scope > div')].filter(
-      (div) => div.classList.length > 0,
-    );
+    const blocks = [...section.querySelectorAll(':scope > div')].filter((div) => div.classList.length > 0);
 
     for (const block of blocks) {
       totalBlocks++;
@@ -76,26 +74,20 @@ export async function run(url) {
 
       // 1. Block name must be lowercase-kebab-case
       if (!BLOCK_NAME_RE.test(blockName)) {
-        findings.push(
-          `${tag}: name is not lowercase-kebab-case — EDS will fail to load the block JS/CSS.`,
-        );
+        findings.push(`${tag}: name is not lowercase-kebab-case — EDS will fail to load the block JS/CSS.`);
         structuralFailure = true;
       }
 
       // 2. Must have at least one child row <div>
       const rows = [...block.querySelectorAll(':scope > div')];
       if (rows.length === 0) {
-        findings.push(
-          `${tag}: no child row <div> found — block has no renderable content structure.`,
-        );
+        findings.push(`${tag}: no child row <div> found — block has no renderable content structure.`);
         structuralFailure = true;
       }
 
       // 3. Inline style on block wrapper
       if (block.hasAttribute('style')) {
-        findings.push(
-          `${tag}: block wrapper has an inline style attribute — styles belong in the block's CSS file.`,
-        );
+        findings.push(`${tag}: block wrapper has an inline style attribute — styles belong in the block's CSS file.`);
       }
 
       // 4. ID on block wrapper

@@ -12,7 +12,7 @@
  *   WARN — Inline color + background-color with contrast ratio below 4.5:1 (WCAG 1.4.3)
  */
 
-import { fetchAndParse, truncate, addCapped } from '../lib/fetch.js';
+import { addCapped, fetchAndParse, truncate } from '../lib/fetch.js';
 
 /**
  * @param {string} url
@@ -43,48 +43,53 @@ export async function run(url) {
   }
 
   // 2. <img> inside <a> with alt="" — link has no accessible name from the image
-  const linkedImgsEmptyAlt = imgs.filter(
-    (img) => img.getAttribute('alt') === '' && img.closest('a') !== null,
-  ).filter((img) => {
-    const anchor = img.closest('a');
-    // Only flag if the anchor also has no other text / aria-label
-    const labelText = (anchor.getAttribute('aria-label') ?? '') + anchor.textContent.replace(img.textContent, '').trim();
-    return !labelText.trim();
-  });
+  const linkedImgsEmptyAlt = imgs
+    .filter((img) => img.getAttribute('alt') === '' && img.closest('a') !== null)
+    .filter((img) => {
+      const anchor = img.closest('a');
+      // Only flag if the anchor also has no other text / aria-label
+      const labelText =
+        (anchor.getAttribute('aria-label') ?? '') + anchor.textContent.replace(img.textContent, '').trim();
+      return !labelText.trim();
+    });
   if (linkedImgsEmptyAlt.length > 0) {
     addCapped(
       findings,
       linkedImgsEmptyAlt,
-      (img) => `<img alt=""> inside <a> with no other accessible name — link is invisible to screen readers: src="${truncate(img.getAttribute('src') ?? '')}"`,
+      (img) =>
+        `<img alt=""> inside <a> with no other accessible name — link is invisible to screen readers: src="${truncate(img.getAttribute('src') ?? '')}"`,
       'linked images with empty alt',
     );
     hasFail = true;
   }
 
   // 3. Unlabelled form controls
-  const formControls = [...doc.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]), select, textarea')];
+  const formControls = [
+    ...doc.querySelectorAll(
+      'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]), select, textarea',
+    ),
+  ];
   const unlabelledControls = formControls.filter((el) => !hasAccessibleLabel(el, doc));
   if (unlabelledControls.length > 0) {
     addCapped(
       findings,
       unlabelledControls,
-      (el) => `<${el.tagName.toLowerCase()}${el.getAttribute('type') ? ` type="${el.getAttribute('type')}"` : ''}${el.getAttribute('name') ? ` name="${el.getAttribute('name')}"` : ''}> has no associated label, aria-label, or aria-labelledby`,
+      (el) =>
+        `<${el.tagName.toLowerCase()}${el.getAttribute('type') ? ` type="${el.getAttribute('type')}"` : ''}${el.getAttribute('name') ? ` name="${el.getAttribute('name')}"` : ''}> has no associated label, aria-label, or aria-labelledby`,
       'unlabelled form controls',
     );
     hasFail = true;
   }
 
   // 4. Buttons with no accessible name
-  const buttons = [
-    ...doc.querySelectorAll('button'),
-    ...doc.querySelectorAll('[role="button"]'),
-  ];
+  const buttons = [...doc.querySelectorAll('button'), ...doc.querySelectorAll('[role="button"]')];
   const unlabelledButtons = buttons.filter((el) => !getAccessibleName(el).trim());
   if (unlabelledButtons.length > 0) {
     addCapped(
       findings,
       unlabelledButtons,
-      (el) => `<${el.tagName.toLowerCase()}${el.hasAttribute('role') ? ` role="${el.getAttribute('role')}"` : ''}> has no accessible name (no text, aria-label, or aria-labelledby)`,
+      (el) =>
+        `<${el.tagName.toLowerCase()}${el.hasAttribute('role') ? ` role="${el.getAttribute('role')}"` : ''}> has no accessible name (no text, aria-label, or aria-labelledby)`,
       'unlabelled buttons',
     );
     hasFail = true;
@@ -144,12 +149,7 @@ function hasAccessibleLabel(el, doc) {
 
 /** Get the accessible name of an element (text content + aria attributes). */
 function getAccessibleName(el) {
-  return (
-    el.getAttribute('aria-label') ??
-    el.getAttribute('title') ??
-    el.textContent ??
-    ''
-  ).trim();
+  return (el.getAttribute('aria-label') ?? el.getAttribute('title') ?? el.textContent ?? '').trim();
 }
 
 /**
@@ -171,11 +171,7 @@ function parseColor(raw) {
   // hex: #rgb or #rrggbb
   const hex3 = s.match(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/);
   if (hex3) {
-    return [
-      parseInt(hex3[1] + hex3[1], 16),
-      parseInt(hex3[2] + hex3[2], 16),
-      parseInt(hex3[3] + hex3[3], 16),
-    ];
+    return [parseInt(hex3[1] + hex3[1], 16), parseInt(hex3[2] + hex3[2], 16), parseInt(hex3[3] + hex3[3], 16)];
   }
   const hex6 = s.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/);
   if (hex6) {
@@ -188,14 +184,24 @@ function parseColor(raw) {
 
   // Common named colors
   const NAMED = {
-    white: [255, 255, 255], black: [0, 0, 0],
-    red: [255, 0, 0], green: [0, 128, 0], blue: [0, 0, 255],
-    yellow: [255, 255, 0], orange: [255, 165, 0], purple: [128, 0, 128],
-    gray: [128, 128, 128], grey: [128, 128, 128],
-    lightgray: [211, 211, 211], lightgrey: [211, 211, 211],
-    darkgray: [169, 169, 169], darkgrey: [169, 169, 169],
-    whitesmoke: [245, 245, 245], gainsboro: [220, 220, 220],
-    silver: [192, 192, 192], transparent: [255, 255, 255],
+    white: [255, 255, 255],
+    black: [0, 0, 0],
+    red: [255, 0, 0],
+    green: [0, 128, 0],
+    blue: [0, 0, 255],
+    yellow: [255, 255, 0],
+    orange: [255, 165, 0],
+    purple: [128, 0, 128],
+    gray: [128, 128, 128],
+    grey: [128, 128, 128],
+    lightgray: [211, 211, 211],
+    lightgrey: [211, 211, 211],
+    darkgray: [169, 169, 169],
+    darkgrey: [169, 169, 169],
+    whitesmoke: [245, 245, 245],
+    gainsboro: [220, 220, 220],
+    silver: [192, 192, 192],
+    transparent: [255, 255, 255],
   };
   return NAMED[s] ?? null;
 }
@@ -204,7 +210,7 @@ function parseColor(raw) {
 function luminance([r, g, b]) {
   const lin = [r, g, b].map((c) => {
     const s = c / 255;
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
   });
   return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
 }

@@ -20,14 +20,14 @@ import { fetchRaw } from '../lib/fetch.js';
 
 /** AI crawler user-agents to look for in robots.txt */
 const AI_AGENTS = [
-  'GPTBot',           // OpenAI
-  'ChatGPT-User',     // OpenAI (browsing)
-  'anthropic-ai',     // Anthropic
-  'ClaudeBot',        // Anthropic
-  'Google-Extended',  // Google AI training
-  'PerplexityBot',    // Perplexity
+  'GPTBot', // OpenAI
+  'ChatGPT-User', // OpenAI (browsing)
+  'anthropic-ai', // Anthropic
+  'ClaudeBot', // Anthropic
+  'Google-Extended', // Google AI training
+  'PerplexityBot', // Perplexity
   'Meta-ExternalAgent', // Meta
-  'Bytespider',       // ByteDance / TikTok
+  'Bytespider', // ByteDance / TikTok
 ];
 
 /**
@@ -47,10 +47,12 @@ export async function run(url) {
   // 1. llms.txt
   if (llmsResult.status === 'rejected' || !llmsResult.value.ok) {
     findings.push(
-      'No llms.txt found at domain root — add one to give LLMs a structured summary of your site\'s content and purpose.',
+      "No llms.txt found at domain root — add one to give LLMs a structured summary of your site's content and purpose.",
     );
   } else if (!llmsResult.value.body.trim()) {
-    findings.push('llms.txt exists but is empty — populate it with a description of your site and links to key content.');
+    findings.push(
+      'llms.txt exists but is empty — populate it with a description of your site and links to key content.',
+    );
   }
 
   // 2. robots.txt AI crawler policy
@@ -60,9 +62,7 @@ export async function run(url) {
     );
   } else {
     const robotsBody = robotsResult.value.body;
-    const mentionedAgents = AI_AGENTS.filter((agent) =>
-      new RegExp(`^User-agent:\\s*${agent}`, 'im').test(robotsBody),
-    );
+    const mentionedAgents = AI_AGENTS.filter((agent) => new RegExp(`^User-agent:\\s*${agent}`, 'im').test(robotsBody));
 
     if (mentionedAgents.length === 0) {
       findings.push(

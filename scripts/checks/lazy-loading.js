@@ -13,7 +13,7 @@
  *   - loading="eager" is an explicit opt-out of lazy loading → warn
  */
 
-import { fetchAndParse, truncate, addCapped } from '../lib/fetch.js';
+import { addCapped, fetchAndParse, truncate } from '../lib/fetch.js';
 
 /**
  * @param {string} url
@@ -40,9 +40,7 @@ export async function run(url) {
   const lcpSrc = truncate(lcpImg.getAttribute('src') ?? '');
 
   if (lcpImg.getAttribute('loading') === 'lazy') {
-    findings.push(
-      `LCP image has loading="lazy" — this defers the most important image and hurts LCP: "${lcpSrc}"`,
-    );
+    findings.push(`LCP image has loading="lazy" — this defers the most important image and hurts LCP: "${lcpSrc}"`);
     hasFail = true;
   } else if (!lcpImg.hasAttribute('fetchpriority') || lcpImg.getAttribute('fetchpriority') !== 'high') {
     findings.push(
@@ -51,9 +49,7 @@ export async function run(url) {
   }
 
   // All remaining images should have loading="lazy"
-  const missingLazy = restImgs.filter(
-    (img) => !img.hasAttribute('loading') || img.getAttribute('loading') === 'eager',
-  );
+  const missingLazy = restImgs.filter((img) => !img.hasAttribute('loading') || img.getAttribute('loading') === 'eager');
   if (missingLazy.length > 0) {
     addCapped(
       findings,

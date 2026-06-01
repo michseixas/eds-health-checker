@@ -92,9 +92,7 @@ export async function run(url) {
   }
 
   // 5. Check for high-value schema presence
-  const matched = HIGH_VALUE_SCHEMAS.filter((s) =>
-    foundTypes.some((t) => t === s || t.endsWith(`/${s}`)),
-  );
+  const matched = HIGH_VALUE_SCHEMAS.filter((s) => foundTypes.some((t) => t === s || t.endsWith(`/${s}`)));
 
   if (!hasFail && matched.length === 0 && foundTypes.length > 0) {
     findings.push(

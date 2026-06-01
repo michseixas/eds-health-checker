@@ -49,7 +49,9 @@ export async function run(url) {
   for (const link of stylesheetLinks) {
     const cdn = matchesFontCdn(link.getAttribute('href'), url);
     if (cdn) {
-      findings.push(`Render-blocking font stylesheet from ${cdn}: "${truncate(link.getAttribute('href'))}" — load fonts locally or use a font-display swap.`);
+      findings.push(
+        `Render-blocking font stylesheet from ${cdn}: "${truncate(link.getAttribute('href'))}" — load fonts locally or use a font-display swap.`,
+      );
       hasFail = true;
     }
   }
@@ -61,7 +63,9 @@ export async function run(url) {
     for (const importUrl of imports) {
       const cdn = matchesFontCdn(importUrl, url);
       if (cdn) {
-        findings.push(`CSS @import from font CDN (${cdn}): "${truncate(importUrl)}" — @import is render-blocking and should be replaced with a <link> or removed.`);
+        findings.push(
+          `CSS @import from font CDN (${cdn}): "${truncate(importUrl)}" — @import is render-blocking and should be replaced with a <link> or removed.`,
+        );
         hasFail = true;
       }
     }
@@ -87,7 +91,9 @@ export async function run(url) {
   }
   if (externalFontFaces.length > 0) {
     for (const f of externalFontFaces.slice(0, 5)) {
-      findings.push(`@font-face loads from external origin: "${truncate(f)}" — host font files through the EDS media pipeline instead.`);
+      findings.push(
+        `@font-face loads from external origin: "${truncate(f)}" — host font files through the EDS media pipeline instead.`,
+      );
     }
     if (externalFontFaces.length > 5) {
       findings.push(`…and ${externalFontFaces.length - 5} more external @font-face source(s).`);
@@ -123,6 +129,7 @@ function extractCssImports(css) {
   // Matches: @import "url" or @import url("url") or @import url('url')
   const re = /@import\s+(?:url\s*\(\s*['"]?([^'")]+)['"]?\s*\)|['"]([^'"]+)['"])/gi;
   let m;
+  // biome-ignore lint/suspicious/noAssignInExpressions: standard regex iterator pattern
   while ((m = re.exec(css)) !== null) {
     urls.push(m[1] ?? m[2]);
   }
@@ -138,9 +145,11 @@ function extractFontFaceUrls(css, pageUrl) {
   // Isolate @font-face blocks
   const blockRe = /@font-face\s*\{([^}]*)\}/gi;
   let block;
+  // biome-ignore lint/suspicious/noAssignInExpressions: standard regex iterator pattern
   while ((block = blockRe.exec(css)) !== null) {
     const srcRe = /url\s*\(\s*['"]?([^'")]+)['"]?\s*\)/gi;
     let m;
+    // biome-ignore lint/suspicious/noAssignInExpressions: standard regex iterator pattern
     while ((m = srcRe.exec(block[1])) !== null) {
       const href = m[1].trim();
       try {

@@ -3,54 +3,54 @@
    ========================================================================== */
 
 :root {
-  --color-bg:             #f4f4f4;
-  --color-surface:        #ffffff;
-  --color-border:         #e0e0e0;
+  --color-bg: #f4f4f4;
+  --color-surface: #ffffff;
+  --color-border: #e0e0e0;
 
-  --color-pass:           #1a7f37;
-  --color-pass-bg:        #dafbe1;
-  --color-warn:           #9a6700;
-  --color-warn-bg:        #fff8c5;
-  --color-fail:           #cf222e;
-  --color-fail-bg:        #ffebe9;
+  --color-pass: #1a7f37;
+  --color-pass-bg: #dafbe1;
+  --color-warn: #9a6700;
+  --color-warn-bg: #fff8c5;
+  --color-fail: #cf222e;
+  --color-fail-bg: #ffebe9;
 
-  --color-text-primary:   #1a1a2e;
+  --color-text-primary: #1a1a2e;
   --color-text-secondary: #57606a;
-  --color-accent:         #0066cc;
+  --color-accent: #0066cc;
 
-  --space-xs:  0.25rem;
-  --space-sm:  0.5rem;
-  --space-md:  1rem;
-  --space-lg:  1.5rem;
-  --space-xl:  2rem;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
 
   --radius-sm: 4px;
   --radius-md: 8px;
 
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', Consolas, 'Courier New', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
 
-  --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.10);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Dark theme — token overrides only */
 html[data-theme="dark"] {
   color-scheme: dark;
-  --color-bg:             #0d1117;
-  --color-surface:        #161b22;
-  --color-border:         #30363d;
-  --color-text-primary:   #e6edf3;
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-border: #30363d;
+  --color-text-primary: #e6edf3;
   --color-text-secondary: #8b949e;
-  --color-accent:         #58a6ff;
-  --color-pass:           #3fb950;
-  --color-pass-bg:        #1a2c1e;
-  --color-warn:           #d29922;
-  --color-warn-bg:        #2c2a0e;
-  --color-fail:           #f85149;
-  --color-fail-bg:        #2c1215;
-  --shadow-card:          0 1px 3px rgba(0, 0, 0, 0.40);
-  --shadow-card-hover:    0 4px 12px rgba(0, 0, 0, 0.50);
+  --color-accent: #58a6ff;
+  --color-pass: #3fb950;
+  --color-pass-bg: #1a2c1e;
+  --color-warn: #d29922;
+  --color-warn-bg: #2c2a0e;
+  --color-fail: #f85149;
+  --color-fail-bg: #2c1215;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 html[data-theme="dark"] .skeleton {
@@ -62,7 +62,9 @@ html[data-theme="dark"] .skeleton {
    2. Reset + base
    ========================================================================== */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -114,7 +116,9 @@ body {
   font-size: 0.875rem;
   background: var(--color-bg);
   color: var(--color-text-primary);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 #url-input:focus {
@@ -135,7 +139,9 @@ button {
   font-family: var(--font-sans);
   font-size: 0.875rem;
   font-weight: 500;
-  transition: background 0.15s, opacity 0.15s;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
   white-space: nowrap;
 }
 
@@ -144,8 +150,13 @@ button {
   color: #fff;
 }
 
-#submit-btn:hover:not(:disabled) { background: #0052a3; }
-#submit-btn:disabled              { opacity: 0.5; cursor: default; }
+#submit-btn:hover:not(:disabled) {
+  background: #0052a3;
+}
+#submit-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 
 #export-btn {
   background: var(--color-surface);
@@ -154,7 +165,9 @@ button {
   margin-left: auto;
 }
 
-#export-btn:hover { background: var(--color-bg); }
+#export-btn:hover {
+  background: var(--color-bg);
+}
 
 #theme-btn {
   background: var(--color-surface);
@@ -165,7 +178,10 @@ button {
   flex-shrink: 0;
 }
 
-#theme-btn:hover { background: var(--color-bg); color: var(--color-text-primary); }
+#theme-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
 
 /* ==========================================================================
    5. Dashboard layout
@@ -237,7 +253,9 @@ button {
   border-radius: var(--radius-sm);
   border: 2px solid transparent;
   cursor: pointer;
-  transition: outline 0.1s, filter 0.1s;
+  transition:
+    outline 0.1s,
+    filter 0.1s;
 }
 
 .score-summary__count:hover {
@@ -272,20 +290,37 @@ button {
 }
 
 /* Filter: hide cards that don't match the active status */
-.check-grid[data-filter="pass"] .check-card:not(.check-card--pass) { display: none; }
-.check-grid[data-filter="warn"] .check-card:not(.check-card--warn) { display: none; }
-.check-grid[data-filter="fail"] .check-card:not(.check-card--fail) { display: none; }
+.check-grid[data-filter="pass"] .check-card:not(.check-card--pass) {
+  display: none;
+}
+.check-grid[data-filter="warn"] .check-card:not(.check-card--warn) {
+  display: none;
+}
+.check-grid[data-filter="fail"] .check-card:not(.check-card--fail) {
+  display: none;
+}
 
 /* Filter: hide cards not in the active category */
-.check-card--cat-hidden { display: none; }
+.check-card--cat-hidden {
+  display: none;
+}
 
 /* ==========================================================================
    7. Status colour utilities (used on badges, counts, card borders)
    ========================================================================== */
 
-.status-pass { background: var(--color-pass-bg); color: var(--color-pass); }
-.status-warn { background: var(--color-warn-bg); color: var(--color-warn); }
-.status-fail { background: var(--color-fail-bg); color: var(--color-fail); }
+.status-pass {
+  background: var(--color-pass-bg);
+  color: var(--color-pass);
+}
+.status-warn {
+  background: var(--color-warn-bg);
+  color: var(--color-warn);
+}
+.status-fail {
+  background: var(--color-fail-bg);
+  color: var(--color-fail);
+}
 
 /* ==========================================================================
    8. Check card grid
@@ -311,10 +346,18 @@ button {
   transition: box-shadow 0.15s;
 }
 
-.check-card:hover         { box-shadow: var(--shadow-card-hover); }
-.check-card--pass         { border-left-color: var(--color-pass); }
-.check-card--warn         { border-left-color: var(--color-warn); }
-.check-card--fail         { border-left-color: var(--color-fail); }
+.check-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+.check-card--pass {
+  border-left-color: var(--color-pass);
+}
+.check-card--warn {
+  border-left-color: var(--color-warn);
+}
+.check-card--fail {
+  border-left-color: var(--color-fail);
+}
 
 .check-card__header {
   display: flex;
@@ -330,9 +373,15 @@ button {
   text-align: center;
 }
 
-.check-card--pass .check-card__icon { color: var(--color-pass); }
-.check-card--warn .check-card__icon { color: var(--color-warn); }
-.check-card--fail .check-card__icon { color: var(--color-fail); }
+.check-card--pass .check-card__icon {
+  color: var(--color-pass);
+}
+.check-card--warn .check-card__icon {
+  color: var(--color-warn);
+}
+.check-card--fail .check-card__icon {
+  color: var(--color-fail);
+}
 
 .check-card__label {
   font-size: 1rem;
@@ -371,10 +420,12 @@ button {
 }
 
 /* Remove default disclosure triangle in Safari */
-.check-card__findings summary::-webkit-details-marker { display: none; }
+.check-card__findings summary::-webkit-details-marker {
+  display: none;
+}
 
 .check-card__findings summary::before {
-  content: '▶';
+  content: "▶";
   font-size: 0.6rem;
   display: inline-block;
   transition: transform 0.15s;
@@ -399,7 +450,9 @@ button {
   line-height: 1.5;
 }
 
-.check-card__findings li:last-child { border-bottom: none; }
+.check-card__findings li:last-child {
+  border-bottom: none;
+}
 
 /* Criteria list (pass cards only) — same structure as findings */
 .check-card__criteria {
@@ -419,10 +472,12 @@ button {
   gap: var(--space-xs);
 }
 
-.check-card__criteria summary::-webkit-details-marker { display: none; }
+.check-card__criteria summary::-webkit-details-marker {
+  display: none;
+}
 
 .check-card__criteria summary::before {
-  content: '▶';
+  content: "▶";
   font-size: 0.6rem;
   display: inline-block;
   transition: transform 0.15s;
@@ -447,24 +502,25 @@ button {
   line-height: 1.5;
 }
 
-.check-card__criteria li:last-child { border-bottom: none; }
+.check-card__criteria li:last-child {
+  border-bottom: none;
+}
 
 /* ==========================================================================
    11. Loading skeleton
    ========================================================================== */
 
 @keyframes shimmer {
-  0%   { background-position: -600px 0; }
-  100% { background-position:  600px 0; }
+  0% {
+    background-position: -600px 0;
+  }
+  100% {
+    background-position: 600px 0;
+  }
 }
 
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    #efefef 25%,
-    #e0e0e0 50%,
-    #efefef 75%
-  );
+  background: linear-gradient(90deg, #efefef 25%, #e0e0e0 50%, #efefef 75%);
   background-size: 600px 100%;
   animation: shimmer 1.4s ease-in-out infinite;
   border-radius: var(--radius-sm);
@@ -487,8 +543,13 @@ button {
   padding: var(--space-md) var(--space-lg);
 }
 
-.skeleton--line       { height: 1rem;  width: 100%; }
-.skeleton--short      { width: 40%; }
+.skeleton--line {
+  height: 1rem;
+  width: 100%;
+}
+.skeleton--short {
+  width: 40%;
+}
 
 /* ==========================================================================
    12. Error message
@@ -623,9 +684,15 @@ button {
   line-height: 1.6;
 }
 
-.seo-ai-panel__item-icon--pass { color: var(--color-pass); }
-.seo-ai-panel__item-icon--warn { color: var(--color-warn); }
-.seo-ai-panel__item-icon--fail { color: var(--color-fail); }
+.seo-ai-panel__item-icon--pass {
+  color: var(--color-pass);
+}
+.seo-ai-panel__item-icon--warn {
+  color: var(--color-warn);
+}
+.seo-ai-panel__item-icon--fail {
+  color: var(--color-fail);
+}
 
 .seo-ai-panel__item-body {
   flex: 1;
@@ -646,7 +713,9 @@ button {
   text-align: left;
   text-decoration: underline;
   text-decoration-color: transparent;
-  transition: color 0.15s, text-decoration-color 0.15s;
+  transition:
+    color 0.15s,
+    text-decoration-color 0.15s;
 }
 
 .seo-ai-panel__item-btn:hover {
@@ -665,13 +734,37 @@ button {
 }
 
 /* Skeleton sizes for loading state */
-.skeleton--icon       { height: 1.25rem; width: 1.25rem; flex-shrink: 0; border-radius: 50%; }
-.skeleton--seo-label  { height: 1rem;    width: 55%; }
-.skeleton--seo-badge  { height: 1.25rem; width: 6rem; }
-.skeleton--seo-icon   { height: 1rem;    width: 1.25rem; flex-shrink: 0; }
-.skeleton--seo-row    { height: 1rem;    flex: 1; }
-.skeleton--tile-badge { height: 1.25rem; width: 8rem; }
-.skeleton--tile-count { height: 0.875rem; width: 4rem; }
+.skeleton--icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+.skeleton--seo-label {
+  height: 1rem;
+  width: 55%;
+}
+.skeleton--seo-badge {
+  height: 1.25rem;
+  width: 6rem;
+}
+.skeleton--seo-icon {
+  height: 1rem;
+  width: 1.25rem;
+  flex-shrink: 0;
+}
+.skeleton--seo-row {
+  height: 1rem;
+  flex: 1;
+}
+.skeleton--tile-badge {
+  height: 1.25rem;
+  width: 8rem;
+}
+.skeleton--tile-count {
+  height: 0.875rem;
+  width: 4rem;
+}
 
 /* Responsive: 3 cols on tablet (3+2 split), 2 on small, 1 on mobile */
 @media (max-width: 860px) {
@@ -726,8 +819,12 @@ button {
     color: #888;
   }
 
-  #app-header  { display: none; }
-  #export-btn  { display: none; }
+  #app-header {
+    display: none;
+  }
+  #export-btn {
+    display: none;
+  }
 
   #dashboard {
     margin: 0;
@@ -746,9 +843,15 @@ button {
   }
 
   /* Force findings open — the <details> toggle is meaningless in print */
-  .check-card__findings          { display: block; }
-  .check-card__findings summary  { display: none; }
-  .check-card__findings ul       { display: block; }
+  .check-card__findings {
+    display: block;
+  }
+  .check-card__findings summary {
+    display: none;
+  }
+  .check-card__findings ul {
+    display: block;
+  }
 
   .seo-ai-panel {
     break-inside: avoid;

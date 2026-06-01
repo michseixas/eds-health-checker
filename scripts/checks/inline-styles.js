@@ -94,7 +94,9 @@ export async function run(url) {
       );
     }
     if (nonImportantTheming.length > MAX_FINDINGS) {
-      findings.push(`…and ${nonImportantTheming.length - MAX_FINDINGS} more element(s) with theming properties set inline.`);
+      findings.push(
+        `…and ${nonImportantTheming.length - MAX_FINDINGS} more element(s) with theming properties set inline.`,
+      );
     }
   }
 
@@ -128,8 +130,6 @@ function extractThemingProps(styleAttr) {
     return re.test(decl);
   });
 }
-
-
 
 const CHECKS = [
   'No <style> tags inside <body>',

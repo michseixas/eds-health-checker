@@ -1,13 +1,7 @@
 {
   "defaultMode": "default",
   "permissions": {
-    "allow": [
-      "Bash(npm install*)",
-      "Bash(npm run *)",
-      "Bash(npm test*)",
-      "Bash(npm ci*)",
-      "Bash(npx biome*)"
-    ],
+    "allow": ["Bash(npm install*)", "Bash(npm run *)", "Bash(npm test*)", "Bash(npm ci*)", "Bash(npx biome*)"],
     "deny": []
   },
   "attribution": {
@@ -30,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-             "command": "python3 .claude/hooks/stop-notify.py"
+            "command": "python3 .claude/hooks/stop-notify.py"
           }
         ]
       }

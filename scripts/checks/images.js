@@ -16,7 +16,7 @@
 /** Matches EDS media pipeline filenames: media_<hex-hash>.<ext> */
 const MEDIA_PIPELINE_RE = /\/media_[a-f0-9]/i;
 
-import { fetchAndParse, truncate, addCapped } from '../lib/fetch.js';
+import { addCapped, fetchAndParse, truncate } from '../lib/fetch.js';
 
 /**
  * @param {string} url
@@ -104,7 +104,8 @@ export async function run(url) {
     addCapped(
       findings,
       nonPipeline,
-      (src) => `Same-origin image not through EDS pipeline: "${truncate(src)}" — missing auto-WebP and responsive resizing.`,
+      (src) =>
+        `Same-origin image not through EDS pipeline: "${truncate(src)}" — missing auto-WebP and responsive resizing.`,
       'non-pipeline same-origin images',
     );
   }
@@ -190,5 +191,3 @@ function parseSrcset(srcset) {
     .map((part) => part.trim().split(/\s+/)[0])
     .filter(Boolean);
 }
-
-

@@ -8,7 +8,7 @@
 import { exportPdf } from './pdf.js';
 import { buildSeoLoading, buildSeoPanel } from './seo-summary.js';
 
-const STATUS_ICON  = { pass: '✓', warn: '⚠', fail: '✕' };
+const STATUS_ICON = { pass: '✓', warn: '⚠', fail: '✕' };
 const STATUS_LABEL = { pass: 'Pass', warn: 'Warn', fail: 'Fail' };
 
 const dashboard = document.getElementById('dashboard');
@@ -174,7 +174,6 @@ function buildGrid(results) {
   return grid;
 }
 
-
 function buildCard(result) {
   const card = el('div', `check-card check-card--${result.status}`);
   card.dataset.checkId = result.id;
@@ -279,11 +278,15 @@ function handleCategoryFilter(ids) {
   const grid = dashboard.querySelector('.check-grid');
   if (!grid) return;
 
-  dashboard.querySelectorAll('.score-summary__count').forEach((p) => p.setAttribute('aria-pressed', 'false'));
+  dashboard.querySelectorAll('.score-summary__count').forEach((p) => {
+    p.setAttribute('aria-pressed', 'false');
+  });
   delete grid.dataset.filter;
 
   if (!ids) {
-    grid.querySelectorAll('.check-card--cat-hidden').forEach((c) => c.classList.remove('check-card--cat-hidden'));
+    grid.querySelectorAll('.check-card--cat-hidden').forEach((c) => {
+      c.classList.remove('check-card--cat-hidden');
+    });
     syncResetButton();
     return;
   }
@@ -293,22 +296,29 @@ function handleCategoryFilter(ids) {
     card.classList.toggle('check-card--cat-hidden', !idSet.has(card.dataset.checkId));
   });
 
-  grid.querySelector('.check-card:not(.check-card--cat-hidden)')
+  grid
+    .querySelector('.check-card:not(.check-card--cat-hidden)')
     ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   syncResetButton();
 }
 
 function clearCategoryFilter() {
-  dashboard.querySelectorAll('.check-card--cat-hidden').forEach((c) => c.classList.remove('check-card--cat-hidden'));
-  dashboard.querySelectorAll('[data-filter-ids][aria-pressed="true"]').forEach((t) => t.setAttribute('aria-pressed', 'false'));
+  dashboard.querySelectorAll('.check-card--cat-hidden').forEach((c) => {
+    c.classList.remove('check-card--cat-hidden');
+  });
+  dashboard.querySelectorAll('[data-filter-ids][aria-pressed="true"]').forEach((t) => {
+    t.setAttribute('aria-pressed', 'false');
+  });
 }
 
 function clearAllFilters() {
   const grid = dashboard.querySelector('.check-grid');
   if (grid) delete grid.dataset.filter;
   clearCategoryFilter();
-  dashboard.querySelectorAll('.score-summary__count').forEach((p) => p.setAttribute('aria-pressed', 'false'));
+  dashboard.querySelectorAll('.score-summary__count').forEach((p) => {
+    p.setAttribute('aria-pressed', 'false');
+  });
   syncResetButton();
 }
 

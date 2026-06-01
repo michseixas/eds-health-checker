@@ -26,10 +26,7 @@ export async function run(url) {
   const sitemapUrl = `${origin}/sitemap.xml`;
 
   // Fetch sitemap and robots.txt in parallel
-  const [sitemapRes, robotsRes] = await Promise.allSettled([
-    fetchRaw(sitemapUrl),
-    fetchRaw(`${origin}/robots.txt`),
-  ]);
+  const [sitemapRes, robotsRes] = await Promise.allSettled([fetchRaw(sitemapUrl), fetchRaw(`${origin}/robots.txt`)]);
 
   const findings = [];
   let hasFail = false;
@@ -60,9 +57,7 @@ export async function run(url) {
   const isSitemapIndex = rootName === 'sitemapindex';
 
   if (!isUrlset && !isSitemapIndex) {
-    return result('fail', [
-      `sitemap.xml root element is <${root.localName}> — expected <urlset> or <sitemapindex>.`,
-    ]);
+    return result('fail', [`sitemap.xml root element is <${root.localName}> — expected <urlset> or <sitemapindex>.`]);
   }
 
   // 4. Collect all <loc> values
