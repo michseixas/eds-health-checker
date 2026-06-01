@@ -79,7 +79,7 @@ index.html                          # Entry point — URL form + #dashboard moun
 styles/
   main.css                          # Global styles, CSS custom properties, @media print
 scripts/
-  main.js                           # Orchestrator: runs all checks, progressive render; URL history (localStorage, datalist)
+  main.js                           # Orchestrator: runs all checks, progressive render; URL history (localStorage, datalist); dark mode toggle (localStorage); shareable URL via history.pushState + auto-submit on ?url= param
   lib/
     fetch.js                        # Shared helpers: fetchAndParse, fetchRaw, truncate, addCapped
   checks/
@@ -103,9 +103,9 @@ scripts/
     lang.js                         # HTML lang attribute (WCAG 3.1.1)
     webmcp.js                       # WebMCP declarative tool registration (Lighthouse Agentic Browsing)
   report/
-    dashboard.js                    # Progressive card rendering; status-filter pills; category-filter via tile callbacks; Reset Filter button; Overall badge reset; Export PDF button
+    dashboard.js                    # Progressive card rendering; status-filter pills; category-filter via tile callbacks; Reset Filter button; Overall badge reset; Export PDF button; Copy link button
     pdf.js                          # jsPDF programmatic A4 export — header, summary stats, per-check results with findings
-    seo-summary.js                  # "Site Health Overview" panel: 4 category tiles (Speed/SEO/Accessibility/EDS Quality) + AI/LLM Readiness strip; skeleton loading state; emits category filter callbacks on tile click
+    seo-summary.js                  # "Site Health Overview" panel: 5 category tiles (Speed/SEO/Accessibility/EDS Quality/AI Readiness) + AI/LLM Readiness detail strip; skeleton loading state; emits category filter callbacks on tile click
 server.js                           # Dev server: static files + /proxy + /redirect-check
 lib/
   jspdf.umd.min.js                  # jsPDF 2.5.1 UMD bundle — loaded as non-module script, exposes window.jspdf
@@ -120,5 +120,9 @@ lib/
 - `GET /proxy?url=<url>` — fetches target URL server-side, returns body with CORS headers
 - `GET /redirect-check?url=<url>` — follows redirects, returns `{ finalUrl, redirected, status }`
 - `GET /*` — static file server from project root
+
+## Hooks (`.claude/hooks/`)
+- **PostToolUse** (`post-write-lint.sh`) — runs `npx biome check <file>` on every `.js` write or edit; non-JS files are silently skipped. Fix any Biome errors before considering a task done.
+- **Stop** (`stop-notify.py`) — fires a macOS desktop notification on task completion showing output token count and session duration.
 
 
