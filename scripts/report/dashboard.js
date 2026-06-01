@@ -141,6 +141,16 @@ function buildSummary(results, url) {
   resetBtn.addEventListener('click', clearAllFilters);
   meta.appendChild(resetBtn);
 
+  const copyBtn = el('button', 'copy-link-btn');
+  copyBtn.textContent = 'Copy link';
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 2000);
+    });
+  });
+  meta.appendChild(copyBtn);
+
   const btn = el('button', 'export-btn');
   btn.id = 'export-btn';
   btn.textContent = 'Export PDF';

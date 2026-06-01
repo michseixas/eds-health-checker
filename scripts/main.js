@@ -141,10 +141,18 @@ form.addEventListener('submit', async (e) => {
 
   const results = await Promise.all(promises);
   renderSummary(results, url);
+  history.pushState(null, '', `?url=${encodeURIComponent(url)}`);
 
   submitBtn.disabled = false;
   submitBtn.textContent = 'Run Checks';
 });
+
+// Auto-run if the page was opened with ?url= (e.g. from a bookmark)
+const prefilledUrl = new URLSearchParams(location.search).get('url');
+if (prefilledUrl) {
+  input.value = prefilledUrl;
+  form.requestSubmit();
+}
 
 /** Prepend https:// if missing, then validate with URL constructor. */
 function normalizeUrl(raw) {

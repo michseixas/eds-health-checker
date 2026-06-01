@@ -158,11 +158,21 @@ button {
   cursor: default;
 }
 
-#export-btn {
+.copy-link-btn {
   background: var(--color-surface);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border);
   margin-left: auto;
+}
+
+.copy-link-btn:hover {
+  background: var(--color-bg);
+}
+
+#export-btn {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
 }
 
 #export-btn:hover {
@@ -822,7 +832,8 @@ button {
   #app-header {
     display: none;
   }
-  #export-btn {
+  #export-btn,
+  .copy-link-btn {
     display: none;
   }
 
