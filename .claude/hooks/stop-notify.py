@@ -1,4 +1,35 @@
 #!/usr/bin/env python3
+"""
+Claude Stop Notification Hook
+
+This script monitors Claude IDE sessions and displays a macOS notification when a session stops.
+It tracks session duration, token output, and persists state between invocations.
+
+The script:
+1. Reads JSON input from stdin containing transcript_path and session_id
+2. Maintains a state file to track the last stop timestamp for each session
+3. Parses the transcript file (JSONL format) to extract:
+    - Token usage statistics (counting unique UUIDs to avoid duplicates)
+    - Timestamp range to calculate session duration
+4. Filters out entries from previous sessions based on stored timestamp
+5. Displays a native macOS notification with total tokens and duration
+
+Input JSON format:
+     {
+          "transcript_path": str,  # Path to JSONL transcript file
+          "session_id": str        # Unique session identifier
+     }
+
+State persistence:
+     - State is stored in /tmp/claude-stop-{session_id}
+     - Contains the ISO 8601 timestamp of the last notification
+
+Notification output:
+     - Title: "Claude Code"
+     - Message: "{token_count:,} tokens out" or "done"
+     - Subtitle: "{minutes}m {seconds}s" or "{seconds}s" or "–" (if no data)
+"""
+
 import sys
 import json
 import subprocess
